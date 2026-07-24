@@ -5,7 +5,7 @@ from services.dashboard_service import DashboardService
 import sqlalchemy as sa
 from typing import Optional
 
-router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
+router = APIRouter(prefix="/api/v1/dashboard", tags=["Dashboard"])
 
 
 @router.get("", response_model=dict)

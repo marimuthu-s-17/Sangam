@@ -1,11 +1,11 @@
 import api from './api';
 
 const financeService = {
-  getAll: (params) => api.get('/api/finance', { params }),
-  getById: (id) => api.get(`/api/finance/${id}`),
-  create: (data) => api.post('/api/finance', data),
-  update: (id, data) => api.put(`/api/finance/${id}`, data),
-  delete: (id) => api.delete(`/api/finance/${id}`),
+  getAll: (params) => api.get('/api/v1/finance', { params }),
+  getById: (id) => api.get(`/api/v1/finance/${id}`),
+  create: (data) => api.post('/api/v1/finance', data),
+  update: (id, data) => api.put(`/api/v1/finance/${id}`, data),
+  delete: (id) => api.delete(`/api/v1/finance/${id}`),
 };
 
 export default financeService;

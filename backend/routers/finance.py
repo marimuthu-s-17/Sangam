@@ -5,7 +5,7 @@ from schemas.finance import FinanceCreate, FinanceUpdate, FinanceResponse
 from services.finance_service import FinanceService
 from typing import Optional
 
-router = APIRouter(prefix="/api/finance", tags=["Finance"])
+router = APIRouter(prefix="/api/v1/finance", tags=["Finance"])
 
 
 @router.get("", response_model=dict)

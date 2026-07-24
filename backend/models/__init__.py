@@ -6,6 +6,7 @@ from .loan import Loan, LoanPayment
 from .monthly_auction import AuctionMonth, MonthlyContribution, AuctionDividend
 from .audit_log import AuditLog
 from .setting import Setting
+from .reminder import ReminderSetting, ReminderHistory, GlobalReminderSetting
 
 __all__ = [
     "Member", "MemberStatus",
@@ -16,4 +17,5 @@ __all__ = [
     "AuctionMonth", "MonthlyContribution", "AuctionDividend",
     "AuditLog",
     "Setting",
+    "ReminderSetting", "ReminderHistory", "GlobalReminderSetting",
 ]

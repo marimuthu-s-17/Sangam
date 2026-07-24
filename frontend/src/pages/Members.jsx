@@ -31,6 +31,7 @@ import {
   Paper,
   TablePagination,
 } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 import { useTranslation } from '../context/LanguageContext';
 
 import {
@@ -298,6 +299,50 @@ export default function Members() {
     document.body.removeChild(link);
   };
 
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
+    { field: 'name', headerName: 'Name', flex: 1.2, minWidth: 150, align: 'left', headerAlign: 'left' },
+    { field: 'phone', headerName: 'Phone', width: 130, align: 'left', headerAlign: 'left' },
+    { field: 'age', headerName: 'Age', width: 80, align: 'center', headerAlign: 'center' },
+    { field: 'gender', headerName: 'Gender', width: 100, align: 'center', headerAlign: 'center', renderCell: (p) => p.value ? p.value.charAt(0).toUpperCase() + p.value.slice(1) : '—' },
+    { field: 'joined_date', headerName: 'Joined', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => formatDate(p.value) },
+    {
+      field: 'status',
+      headerName: 'Status',
+      width: 120,
+      align: 'center',
+      headerAlign: 'center',
+      renderCell: (p) => <StatusChip status={p.value} />,
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 150,
+      sortable: false,
+      align: 'right',
+      headerAlign: 'right',
+      renderCell: (params) => (
+        <Box>
+          <Tooltip title="View Details">
+            <IconButton size="small" onClick={() => openDetail(params.row)} color="info">
+              <ViewIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Edit">
+            <IconButton size="small" onClick={(e) => openEdit(params.row, e)} color="primary">
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton size="small" onClick={(e) => openDelete(params.row, e)} color="error">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
+
 
   return (
     <Box sx={{ position: 'relative', pb: 4 }}>
@@ -401,138 +446,28 @@ export default function Members() {
         </Button>
       </Box>
 
-      {/* Accordion Member List */}
+      {/* DataGrid Member List */}
       {loading ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
           <Skeleton variant="rectangular" height={50} sx={{ borderRadius: 2 }} />
           <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
         </Box>
-      ) : members.length === 0 ? (
-        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}>
-          <Typography color="text.secondary">No members found matching the filters.</Typography>
-        </Paper>
       ) : (
-        <Box>
-          {/* Table Header Row */}
-          <Paper sx={{ px: 2, py: 1.25, bgcolor: '#F8F5F0', color: '#71717A', borderRadius: 2.5, display: { xs: 'none', md: 'block' }, mb: 0.75, border: '1px solid #EDEAE5' }}>
-            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              <Grid size={{ md: 0.8 }}>ID</Grid>
-              <Grid size={{ md: 3 }}>Name</Grid>
-              <Grid size={{ md: 2 }}>Phone</Grid>
-              <Grid size={{ md: 1 }}>Age</Grid>
-              <Grid size={{ md: 1.2 }}>Gender</Grid>
-              <Grid size={{ md: 2 }}>Joined</Grid>
-              <Grid size={{ md: 2 }} sx={{ textAlign: 'center' }}>Status</Grid>
-            </Grid>
-          </Paper>
-
-          <Stack spacing={0.75}>
-            {members.map((m) => {
-              const isExpanded = expandedMemberId === m.id;
-              return (
-                <Accordion
-                  key={m.id}
-                  expanded={isExpanded}
-                  onChange={handleMemberAccordion(m.id)}
-                  sx={{
-                    borderRadius: '10px !important',
-                    border: '1px solid',
-                    borderColor: isExpanded ? '#D4CFC7' : '#EDEAE5',
-                    boxShadow: isExpanded ? '0 4px 16px rgba(0, 0, 0, 0.06)' : 'none',
-                    '&::before': { display: 'none' },
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon sx={{ color: isExpanded ? 'primary.main' : 'text.secondary', fontSize: 20 }} />}
-                    sx={{
-                      py: 0,
-                      px: 2,
-                      minHeight: '44px !important',
-                      '& .MuiAccordionSummary-content': { margin: '8px 0 !important' },
-                    }}
-                  >
-                    <Grid container spacing={1.5} sx={{ alignItems: 'center', fontSize: '0.82rem' }}>
-                      <Grid size={{ xs: 12, md: 0.8 }} sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.78rem' }}>#{m.id}</Grid>
-                      <Grid size={{ xs: 12, md: 3 }} sx={{ fontWeight: 600 }}>{m.name}</Grid>
-                      <Grid size={{ xs: 6, md: 2 }} sx={{ color: 'text.secondary' }}>{m.phone}</Grid>
-                      <Grid size={{ xs: 3, md: 1 }} sx={{ color: 'text.secondary' }}>{m.age}</Grid>
-                      <Grid size={{ xs: 3, md: 1.2 }} sx={{ textTransform: 'capitalize', color: 'text.secondary' }}>{m.gender || '—'}</Grid>
-                      <Grid size={{ xs: 6, md: 2 }} sx={{ color: 'text.secondary' }}>{formatDate(m.joined_date)}</Grid>
-                      <Grid size={{ xs: 6, md: 2 }} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'center' } }}>
-                        <StatusChip status={m.status} />
-                      </Grid>
-                    </Grid>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ px: 2.5, pb: 2, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#FAFAF8' }}>
-                    <Grid container spacing={2} sx={{ mb: 2 }}>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Phone</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{m.phone}</Typography>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Address</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{m.address || '—'}</Typography>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Joined Date</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{formatDate(m.joined_date)}</Typography>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Notes</Typography>
-                        <Typography variant="body2" sx={{ fontStyle: 'italic', fontSize: '0.84rem' }}>{m.notes || 'None'}</Typography>
-                      </Grid>
-                    </Grid>
-
-                    <Divider sx={{ mb: 1.5 }} />
-
-                    {/* Actions Panel */}
-                    <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
-                      <Button
-                        variant="contained"
-                        color="info"
-                        size="small"
-                        startIcon={<ViewIcon />}
-                        onClick={() => openDetail(m)}
-                      >
-                        View Details
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        startIcon={<EditIcon />}
-                        onClick={(e) => openEdit(m, e)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        startIcon={<DeleteIcon />}
-                        onClick={(e) => openDelete(m, e)}
-                      >
-                        Delete
-                      </Button>
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })}
-          </Stack>
-
-          <TablePagination
-            component="div"
-            count={total}
-            page={paginationModel.page}
-            onPageChange={(e, newPage) => setPaginationModel(prev => ({ ...prev, page: newPage }))}
-            rowsPerPage={paginationModel.pageSize}
-            onRowsPerPageChange={(e) => setPaginationModel(prev => ({ ...prev, pageSize: parseInt(e.target.value, 10), page: 0 }))}
-            rowsPerPageOptions={[10, 20, 50, 100]}
-            sx={{ mt: 2 }}
+        <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+          <DataGrid
+            rows={members}
+            columns={columns}
+            rowCount={total}
+            loading={loading}
+            paginationMode="server"
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            pageSizeOptions={[10, 20, 50, 100]}
+            disableRowSelectionOnClick
+            rowHeight={52}
+            sx={{ border: 0 }}
           />
-        </Box>
+        </Paper>
       )}
 
       {/* Floating Add Button */}

@@ -8,6 +8,7 @@ import Finance from './pages/Finance';
 import Ledger from './pages/Ledger';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import RemindersSettings from './pages/RemindersSettings';
 import { SettingsProvider } from './context/SettingsContext';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="ledger" element={<Ledger />} />
           <Route path="reports" element={<Reports />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="reminders-settings" element={<RemindersSettings />} />
         </Route>
       </Routes>
     </SettingsProvider>

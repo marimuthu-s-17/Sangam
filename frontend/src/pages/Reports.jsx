@@ -88,7 +88,7 @@ export default function Reports() {
         { field: 'date', headerName: 'Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
         { field: 'category', headerName: 'Category', flex: 0.8, renderCell: (p) => <Box sx={{ textTransform: 'capitalize' }}>{p.value}</Box> },
         { field: 'description', headerName: 'Description', flex: 1.2 },
-        { field: 'amount', headerName: 'Amount', flex: 0.8, renderCell: (p) => formatCurrency(p.value) },
+        { field: 'amount', headerName: 'Amount', flex: 0.8, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
         { field: 'payment_method', headerName: 'Payment Method', flex: 0.8 },
         { field: 'remarks', headerName: 'Remarks', flex: 1 },
       ];
@@ -97,12 +97,12 @@ export default function Reports() {
         { field: 'id', headerName: 'ID', width: 70 },
         { field: 'borrower_name', headerName: 'Borrower', flex: 1.2 },
         { field: 'phone_number', headerName: 'Phone', flex: 0.8 },
-        { field: 'loan_amount', headerName: 'Principal', flex: 0.8, renderCell: (p) => formatCurrency(p.value) },
-        { field: 'interest_rate', headerName: 'Rate', flex: 0.6, renderCell: (p) => `${p.value}% p.a.` },
+        { field: 'loan_amount', headerName: 'Principal', flex: 0.8, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+        { field: 'interest_rate', headerName: 'Rate', flex: 0.6, align: 'right', headerAlign: 'right', renderCell: (p) => `${p.value}% p.a.` },
         { field: 'loan_date', headerName: 'Loan Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
         { field: 'due_date', headerName: 'Due Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'outstanding_amount', headerName: 'Outstanding', flex: 0.9, renderCell: (p) => formatCurrency(p.value) },
-        { field: 'status', headerName: 'Status', width: 120, renderCell: (p) => <StatusChip status={p.value} /> },
+        { field: 'outstanding_amount', headerName: 'Outstanding', flex: 0.9, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+        { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
         { field: 'remarks', headerName: 'Remarks', flex: 1 },
       ];
     } else if (type === 'interest-collection') {
@@ -111,7 +111,7 @@ export default function Reports() {
         { field: 'loan_id', headerName: 'Loan ID', width: 80 },
         { field: 'borrower_name', headerName: 'Borrower', flex: 1.2 },
         { field: 'payment_date', headerName: 'Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'interest_payment', headerName: 'Interest Paid', flex: 0.9, renderCell: (p) => formatCurrency(p.value) },
+        { field: 'interest_payment', headerName: 'Interest Paid', flex: 0.9, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
         { field: 'payment_method', headerName: 'Method', flex: 0.8 },
         { field: 'notes', headerName: 'Notes', flex: 1 },
       ];
@@ -121,24 +121,24 @@ export default function Reports() {
         { field: 'name', headerName: 'Name', flex: 1.2 },
         { field: 'phone', headerName: 'Phone', flex: 0.8 },
         { field: 'joined_date', headerName: 'Joined Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'status', headerName: 'Status', width: 120, renderCell: (p) => <StatusChip status={p.value} /> },
-        { field: 'total_contributions', headerName: 'Contributions', flex: 0.9, renderCell: (p) => formatCurrency(p.value) },
-        { field: 'outstanding_balance', headerName: 'Outstanding', flex: 0.9, renderCell: (p) => formatCurrency(p.value) },
+        { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
+        { field: 'total_contributions', headerName: 'Contributions', flex: 0.9, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+        { field: 'outstanding_balance', headerName: 'Outstanding', flex: 0.9, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
       ];
     } else if (type === 'auctions') {
       return [
         { field: 'id', headerName: 'ID', width: 70 },
         { field: 'name', headerName: 'Auction Name', flex: 1.2 },
         { field: 'start_month', headerName: 'Start Month', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'duration', headerName: 'Duration', flex: 0.6, renderCell: (p) => `${p.value} Months` },
-        { field: 'prize_amount', headerName: 'Prize Amount', flex: 0.8, renderCell: (p) => formatCurrency(p.value) },
-        { field: 'status', headerName: 'Status', width: 120, renderCell: (p) => <StatusChip status={p.value} /> },
-        { field: 'current_month', headerName: 'Current Round', flex: 0.6 },
+        { field: 'duration', headerName: 'Duration', flex: 0.6, align: 'center', headerAlign: 'center', renderCell: (p) => `${p.value} Months` },
+        { field: 'prize_amount', headerName: 'Prize Amount', flex: 0.8, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+        { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
+        { field: 'current_month', headerName: 'Current Round', flex: 0.6, align: 'center', headerAlign: 'center' },
       ];
     } else if (type === 'profit-loss') {
       return [
         { field: 'metric', headerName: 'Financial Metric', flex: 1.5 },
-        { field: 'amount', headerName: 'Amount', flex: 1, renderCell: (p) => formatCurrency(p.value) },
+        { field: 'amount', headerName: 'Amount', flex: 1, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
       ];
     }
     return [];

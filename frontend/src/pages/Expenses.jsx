@@ -19,7 +19,10 @@ import {
   AccordionDetails,
   Paper,
   Divider,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -208,6 +211,37 @@ export default function Expenses() {
     }
   };
 
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
+    { field: 'description', headerName: 'Description', flex: 1.2, minWidth: 150, align: 'left', headerAlign: 'left' },
+    { field: 'amount', headerName: 'Amount', width: 140, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+    { field: 'category', headerName: 'Category', width: 130, align: 'center', headerAlign: 'center', renderCell: (p) => <Box sx={{ textTransform: 'capitalize' }}>{p.value}</Box> },
+    { field: 'expense_date', headerName: 'Date', width: 130, align: 'center', headerAlign: 'center', renderCell: (p) => formatDate(p.value) },
+    { field: 'payment_method', headerName: 'Method', width: 140, align: 'center', headerAlign: 'center' },
+    { field: 'remarks', headerName: 'Remarks', flex: 1, minWidth: 150, align: 'left', headerAlign: 'left', renderCell: (p) => p.value || '—' },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      sortable: false,
+      align: 'right',
+      headerAlign: 'right',
+      renderCell: (params) => (
+        <Box>
+          <Tooltip title="Edit">
+            <IconButton size="small" onClick={() => openEdit(params.row)} color="primary">
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton size="small" onClick={() => { setDeletingId(params.row.id); setDeleteOpen(true); }} color="error">
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
 
 
   return (
@@ -354,111 +388,25 @@ export default function Expenses() {
         </Grid>
       </Card>
 
-      {/* Accordion Expense List */}
+      {/* DataGrid Expense List */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />
         </Box>
-      ) : rows.length === 0 ? (
-        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}>
-          <Typography color="text.secondary">No expenses found matching the filters.</Typography>
-        </Paper>
       ) : (
-        <Stack spacing={0.75}>
-          {/* Header Row */}
-          <Paper sx={{ px: 2, py: 1.25, bgcolor: '#F8F5F0', color: '#71717A', borderRadius: 2.5, display: { xs: 'none', md: 'block' }, border: '1px solid #EDEAE5' }}>
-            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              <Grid size={{ md: 0.8 }}>ID</Grid>
-              <Grid size={{ md: 3.2 }}>Description</Grid>
-              <Grid size={{ md: 2 }} sx={{ textAlign: 'right' }}>Amount</Grid>
-              <Grid size={{ md: 2 }}>Category</Grid>
-              <Grid size={{ md: 2 }}>Date</Grid>
-              <Grid size={{ md: 2 }}>Payment Method</Grid>
-            </Grid>
-          </Paper>
-
-          {rows.map((exp) => {
-            const isExpanded = expandedExpenseId === exp.id;
-            return (
-              <Accordion
-                key={exp.id}
-                expanded={isExpanded}
-                onChange={handleExpenseAccordion(exp.id)}
-                sx={{
-                  borderRadius: '12px !important',
-                  border: '1px solid',
-                  borderColor: isExpanded ? 'primary.main' : 'divider',
-                  boxShadow: isExpanded ? '0 8px 24px rgba(26, 35, 126, 0.08)' : 'none',
-                  '&::before': { display: 'none' },
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon sx={{ color: isExpanded ? 'primary.main' : 'text.secondary' }} />}
-                  sx={{
-                    py: 1.5,
-                    px: 2.5,
-                    '& .MuiAccordionSummary-content': { margin: 0 },
-                  }}
-                >
-                  <Grid container spacing={2} sx={{ alignItems: 'center', fontSize: '0.875rem' }}>
-                    <Grid size={{ xs: 12, md: 0.8 }} sx={{ fontWeight: 700 }}>#{exp.id}</Grid>
-                    <Grid size={{ xs: 12, md: 3.2 }} sx={{ fontWeight: 600 }}>{exp.description}</Grid>
-                    <Grid size={{ xs: 6, md: 2 }} sx={{ md: { textAlign: 'right' }, color: 'error.main', fontWeight: 700 }}>
-                      {formatCurrency(exp.amount)}
-                    </Grid>
-                    <Grid size={{ xs: 6, md: 2 }} sx={{ textTransform: 'capitalize' }}>{exp.category}</Grid>
-                    <Grid size={{ xs: 6, md: 2 }}>{formatDate(exp.expense_date)}</Grid>
-                    <Grid size={{ xs: 6, md: 2 }}>{exp.payment_method || '—'}</Grid>
-                  </Grid>
-                </AccordionSummary>
-                <AccordionDetails sx={{ px: 2.5, pb: 2, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#FAFAF8' }}>
-                  <Grid container spacing={2} sx={{ mb: 2 }}>
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Remarks</Typography>
-                      <Typography variant="body2" sx={{ fontStyle: 'italic', fontSize: '0.84rem' }}>{exp.remarks || 'None'}</Typography>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Created</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{formatDate(exp.created_at)}</Typography>
-                    </Grid>
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Last Updated</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{formatDate(exp.updated_at)}</Typography>
-                    </Grid>
-                  </Grid>
-
-                  <Divider sx={{ mb: 1.5 }} />
-
-                  {/* Actions Panel */}
-                  <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      size="small"
-                      startIcon={<EditIcon />}
-                      onClick={() => openEdit(exp)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      size="small"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => {
-                        setDeletingId(exp.id);
-                        setDeleteOpen(true);
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </Stack>
-                </AccordionDetails>
-              </Accordion>
-            );
-          })}
-        </Stack>
+        <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            pageSizeOptions={[10, 20, 50, 100]}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 10 } }
+            }}
+            disableRowSelectionOnClick
+            rowHeight={52}
+            sx={{ border: 0 }}
+          />
+        </Paper>
       )}
 
       {/* Add/Edit Form Dialog */}

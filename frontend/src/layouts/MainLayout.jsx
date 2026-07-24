@@ -74,6 +74,7 @@ export default function MainLayout() {
     { text: t('finance'), icon: <AccountBalanceIcon />, path: '/finance' },
     { text: t('ledger'), icon: <MenuBookIcon />, path: '/ledger' },
     { text: t('reports'), icon: <AssessmentIcon />, path: '/reports' },
+    { text: t('reminders'), icon: <NotificationsIcon />, path: '/reminders-settings' },
     { text: t('settings'), icon: <SettingsIcon />, path: '/settings' },
   ];
 

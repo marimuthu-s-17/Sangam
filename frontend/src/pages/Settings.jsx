@@ -74,7 +74,7 @@ export default function Settings() {
   ];
 
   const auditColumns = [
-    { field: 'id', headerName: t('id'), width: 70 },
+    { field: 'id', headerName: t('id'), width: 70, align: 'center', headerAlign: 'center' },
     {
       field: 'created_at',
       headerName: 'Timestamp',
@@ -86,9 +86,27 @@ export default function Settings() {
         return d.toLocaleString(language === 'ta' ? 'ta-IN' : 'en-IN');
       },
     },
-    { field: 'module', headerName: 'Module', width: 120 },
-    { field: 'user', headerName: 'User', width: 100 },
-    { field: 'action', headerName: 'Action Description', flex: 1.5, minWidth: 250 },
+    { field: 'module', headerName: 'Module', width: 120, align: 'center', headerAlign: 'center' },
+    { field: 'user', headerName: 'User', width: 100, align: 'center', headerAlign: 'center' },
+    { 
+      field: 'action', 
+      headerName: 'Action Description', 
+      flex: 1.5, 
+      minWidth: 250,
+      renderCell: (p) => (
+        <Tooltip title={p.value} enterDelay={300} arrow>
+          <span style={{ 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis', 
+            whiteSpace: 'nowrap', 
+            width: '100%', 
+            display: 'block' 
+          }}>
+            {p.value}
+          </span>
+        </Tooltip>
+      )
+    },
   ];
 
   const { control, handleSubmit, reset } = useForm({

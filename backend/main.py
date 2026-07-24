@@ -11,7 +11,10 @@ from database.base import Base
 from models import Member, Auction, Expense, Finance, AuctionMember, Loan  # noqa: F401
 import services.audit_listeners  # noqa: F401
 
-from routers import members, auctions, expenses, finance, dashboard, monthly_auctions, ledger, loans, reports, settings
+from routers import members, auctions, expenses, finance, dashboard, monthly_auctions, ledger, loans, reports, settings, reminders
+
+import asyncio
+from services.reminder_scheduler import start_reminder_scheduler
 
 load_dotenv()
 
@@ -19,8 +22,10 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown."""
+    scheduler_task = asyncio.create_task(start_reminder_scheduler())
     yield
     # Cleanup on shutdown
+    scheduler_task.cancel()
     await engine.dispose()
     print("🔌 Database connections closed")
 
@@ -60,6 +65,7 @@ app.include_router(reports.router)
 app.include_router(monthly_auctions.router)
 app.include_router(ledger.router)
 app.include_router(settings.router)
+app.include_router(reminders.router)
 
 
 @app.get("/", tags=["Health"])

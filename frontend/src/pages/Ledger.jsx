@@ -370,24 +370,32 @@ export default function Ledger() {
       field: 'total_contributions',
       headerName: 'Total Contributions',
       width: 155,
+      align: 'right',
+      headerAlign: 'right',
       renderCell: (params) => formatCurrency(params.row.total_contributions),
     },
     {
       field: 'total_dividend_received',
       headerName: 'Total Dividend',
       width: 140,
+      align: 'right',
+      headerAlign: 'right',
       renderCell: (params) => formatCurrency(params.row.total_dividend_received),
     },
     {
       field: 'total_prize_won',
       headerName: 'Total Prize Won',
       width: 140,
+      align: 'right',
+      headerAlign: 'right',
       renderCell: (params) => formatCurrency(params.row.total_prize_won),
     },
     {
       field: 'winning_month',
       headerName: 'Winning Month',
       width: 160,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (params) => {
         const val = params.row.winning_month;
         return val === 'None' ? (
@@ -401,6 +409,8 @@ export default function Ledger() {
       field: 'outstanding_balance',
       headerName: 'Outstanding Balance',
       width: 160,
+      align: 'right',
+      headerAlign: 'right',
       renderCell: (params) => {
         const val = params.row.outstanding_balance;
         return val > 0 ? (
@@ -414,6 +424,8 @@ export default function Ledger() {
       field: 'overall_net_position',
       headerName: 'Net Position',
       width: 145,
+      align: 'right',
+      headerAlign: 'right',
       renderCell: (params) => {
         const val = params.row.overall_net_position;
         return (
@@ -434,6 +446,8 @@ export default function Ledger() {
       headerName: 'Statement',
       width: 100,
       sortable: false,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (params) => (
         <IconButton color="primary" onClick={() => handleMemberClick(params.row)}>
           <ArrowIcon />
@@ -637,7 +651,7 @@ export default function Ledger() {
               ) : (
                 <TableContainer component={Paper} sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                   <Table>
-                    <TableHead sx={{ bgcolor: '#FAFAF8' }}>
+                    <TableHead sx={{ bgcolor: (theme) => theme.palette.mode === 'dark' ? '#161B22' : '#FAFAF8' }}>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>Month</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Auction Group</TableCell>

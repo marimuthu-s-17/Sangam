@@ -460,6 +460,8 @@ export default function Finance() {
       headerName: 'Type',
       flex: 0.8,
       minWidth: 110,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (p) => <StatusChip status={p.value} />,
     },
     {
@@ -467,6 +469,8 @@ export default function Finance() {
       headerName: 'Amount',
       flex: 0.9,
       minWidth: 120,
+      align: 'right',
+      headerAlign: 'right',
       renderCell: (p) => formatCurrency(p.value),
     },
     {
@@ -482,6 +486,8 @@ export default function Finance() {
       headerName: 'Actions',
       width: 120,
       sortable: false,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (p) => (
         <Box>
           <Tooltip title="Edit">
@@ -498,6 +504,55 @@ export default function Finance() {
               }}
               color="error"
             >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
+
+  const loansColumns = [
+    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
+    { field: 'borrower_name', headerName: 'Borrower Name', flex: 1.2, minWidth: 150, align: 'left', headerAlign: 'left' },
+    { field: 'loan_amount', headerName: 'Loan Amount', width: 140, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+    { field: 'interest_rate', headerName: 'Interest Rate', width: 150, align: 'right', headerAlign: 'right', renderCell: (params) => `${params.row.interest_rate}% (${formatCurrency(params.row.monthly_interest_amount || 0)})` },
+    { field: 'due_date', headerName: 'Next Due Date', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => formatDate(p.value) },
+    { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 280,
+      sortable: false,
+      align: 'right',
+      headerAlign: 'right',
+      renderCell: (params) => (
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            onClick={() => openRecordPayment(params.row)}
+            sx={{ mr: 1, py: 0.5 }}
+          >
+            Record Payment
+          </Button>
+          <Button
+            variant="outlined"
+            color="info"
+            size="small"
+            onClick={() => openHistory(params.row)}
+            sx={{ mr: 1, py: 0.5 }}
+          >
+            History
+          </Button>
+          <Tooltip title="Edit">
+            <IconButton size="small" onClick={() => openEditLoan(params.row)} color="primary">
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton size="small" onClick={() => { setDeletingLoanId(params.row.id); setLoanDeleteOpen(true); }} color="error">
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -661,186 +716,27 @@ export default function Finance() {
             </Grid>
           </Card>
 
-          {/* Accordion Table List */}
+          {/* DataGrid Loans List */}
           {loansLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
               <CircularProgress />
             </Box>
-          ) : loans.length === 0 ? (
-            <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 2.5, border: '1px dashed', borderColor: 'divider' }}>
-              <Typography color="text.secondary">No loans found matching the filters.</Typography>
-            </Paper>
           ) : (
-            <Stack spacing={2} sx={{ mb: 4 }}>
-              {/* Header row to act as headers */}
-              <Paper sx={{ p: 2, bgcolor: '#F8F5F0', color: '#71717A', borderRadius: 2, display: { xs: 'none', md: 'block' }, mb: -1 }}>
-                <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  <Grid size={{ md: 1 }}>ID</Grid>
-                  <Grid size={{ md: 3 }}>Borrower Name</Grid>
-                  <Grid size={{ md: 2 }} sx={{ textAlign: 'right' }}>Loan Amount</Grid>
-                  <Grid size={{ md: 2 }} sx={{ textAlign: 'right' }}>Monthly Interest</Grid>
-                  <Grid size={{ md: 2 }}>Next Due Date</Grid>
-                  <Grid size={{ md: 2 }} sx={{ textAlign: 'center' }}>Status</Grid>
-                </Grid>
-              </Paper>
-
-              {loans.map((loan) => {
-                const isExpanded = expandedId === loan.id;
-                return (
-                  <Accordion
-                    key={loan.id}
-                    expanded={isExpanded}
-                    onChange={handleAccordionChange(loan.id)}
-                    sx={{
-                      borderRadius: '12px !important',
-                      border: '1px solid',
-                      borderColor: isExpanded ? '#D4CFC7' : '#EDEAE5',
-                      boxShadow: isExpanded ? '0 4px 16px rgba(0, 0, 0, 0.06)' : 'none',
-                      '&::before': { display: 'none' },
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon sx={{ color: isExpanded ? 'primary.main' : 'text.secondary', fontSize: 20 }} />}
-                      sx={{
-                        py: 0,
-                        px: 2,
-                        minHeight: '44px !important',
-                        '& .MuiAccordionSummary-content': { margin: '8px 0 !important' },
-                      }}
-                    >
-                      <Grid container spacing={1.5} sx={{ alignItems: 'center', fontSize: '0.82rem' }}>
-                        <Grid size={{ xs: 12, md: 1 }} sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.78rem' }}>
-                          #{loan.id}
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 3 }} sx={{ fontWeight: 600 }}>
-                          {loan.borrower_name}
-                        </Grid>
-                        <Grid size={{ xs: 6, md: 2 }} sx={{ md: { textAlign: 'right' }, color: 'primary.main', fontWeight: 700 }}>
-                          {formatCurrency(loan.loan_amount)}
-                        </Grid>
-                        <Grid size={{ xs: 6, md: 2 }} sx={{ md: { textAlign: 'right' }, fontWeight: 600 }}>
-                          {loan.interest_rate}% ({formatCurrency(loan.monthly_interest_amount || 0)})
-                        </Grid>
-                        <Grid size={{ xs: 6, md: 2 }} sx={{ color: 'text.secondary' }}>
-                          {formatDate(loan.due_date)}
-                        </Grid>
-                        <Grid size={{ xs: 6, md: 2 }} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'center' } }}>
-                          <StatusChip status={loan.status} />
-                        </Grid>
-                      </Grid>
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ px: 2.5, pb: 2, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#FAFAF8' }}>
-                      <Grid container spacing={2} sx={{ mb: 2 }}>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Borrower Phone</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{loan.phone_number}</Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Loan Start Date</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{formatDate(loan.loan_date)}</Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Days Remaining</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem', color: loan.days_remaining <= 3 ? 'error.main' : 'text.primary' }}>
-                            {loan.days_remaining} Days
-                          </Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Monthly Interest Amount</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem', color: 'success.main' }}>
-                            {formatCurrency(loan.monthly_interest_amount || 0)}
-                          </Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Interest Due (Unpaid)</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.84rem', color: (loan.interest_due || 0) > 0 ? 'error.main' : 'success.main' }}>
-                            {formatCurrency(loan.interest_due || 0)}
-                          </Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Total Outstanding Balance</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.84rem', color: 'primary.main' }}>
-                            {formatCurrency(loan.outstanding_amount)}
-                          </Typography>
-                        </Grid>
-                        <Grid size={{ xs: 12, sm: 12, md: 6 }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Remarks</Typography>
-                          <Typography variant="body2" sx={{ fontStyle: 'italic', fontSize: '0.84rem' }}>{loan.remarks || 'None'}</Typography>
-                        </Grid>
-                      </Grid>
-
-                      <Divider sx={{ mb: 1.5 }} />
-
-                      {/* Actions Panel */}
-                      <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          startIcon={<PaymentIcon />}
-                          onClick={(e) => openRecordPayment(loan, e)}
-                          disabled={loan.status === 'closed'}
-                        >
-                          Record Payment
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          size="small"
-                          startIcon={<HistoryIcon />}
-                          onClick={(e) => openHistory(loan, e)}
-                        >
-                          Payment History
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="secondary"
-                          size="small"
-                          startIcon={<EditIcon />}
-                          onClick={(e) => openEditLoan(loan, e)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="warning"
-                          size="small"
-                          startIcon={<CheckCircleIcon />}
-                          onClick={(e) => openCloseConfirm(loan, e)}
-                          disabled={loan.status === 'closed'}
-                        >
-                          Close Loan
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          startIcon={<DeleteIcon />}
-                          onClick={(e) => {
-                            if (e) e.stopPropagation();
-                            setDeletingLoanId(loan.id);
-                            setLoanDeleteOpen(true);
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </Stack>
-                    </AccordionDetails>
-                  </Accordion>
-                );
-              })}
-
-              <TablePagination
-                component="div"
-                count={total}
-                page={paginationModel.page}
-                onPageChange={(e, newPage) => setPaginationModel(prev => ({ ...prev, page: newPage }))}
-                rowsPerPage={paginationModel.pageSize}
-                onRowsPerPageChange={(e) => setPaginationModel(prev => ({ ...prev, pageSize: parseInt(e.target.value, 10), page: 0 }))}
-                rowsPerPageOptions={[5, 10, 25, 50]}
+            <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+              <DataGrid
+                rows={loans}
+                columns={loansColumns}
+                rowCount={total}
+                loading={loansLoading}
+                paginationMode="server"
+                paginationModel={paginationModel}
+                onPaginationModelChange={setPaginationModel}
+                pageSizeOptions={[10, 20, 50, 100]}
+                disableRowSelectionOnClick
+                rowHeight={52}
+                sx={{ border: 0 }}
               />
-            </Stack>
+            </Paper>
           )}
         </Box>
       ) : (
@@ -1070,12 +966,12 @@ export default function Finance() {
               <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: '#F8F5F0', color: '#71717A' }}>Payment Date</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: '#F8F5F0', color: '#71717A' }}>Interest Paid</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: '#F8F5F0', color: '#71717A' }}>Principal Paid</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: '#F8F5F0', color: '#71717A' }}>Remaining Balance</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: '#F8F5F0', color: '#71717A' }}>Method</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: '#F8F5F0', color: '#71717A' }}>Remarks</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: (theme) => theme.palette.mode === 'dark' ? '#161B22' : '#F8F5F0', color: '#71717A' }}>Payment Date</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: (theme) => theme.palette.mode === 'dark' ? '#161B22' : '#F8F5F0', color: '#71717A' }}>Interest Paid</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: (theme) => theme.palette.mode === 'dark' ? '#161B22' : '#F8F5F0', color: '#71717A' }}>Principal Paid</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: (theme) => theme.palette.mode === 'dark' ? '#161B22' : '#F8F5F0', color: '#71717A' }}>Remaining Balance</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: (theme) => theme.palette.mode === 'dark' ? '#161B22' : '#F8F5F0', color: '#71717A' }}>Method</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em', bgcolor: (theme) => theme.palette.mode === 'dark' ? '#161B22' : '#F8F5F0', color: '#71717A' }}>Remarks</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

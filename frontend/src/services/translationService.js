@@ -181,6 +181,24 @@ const translations = {
     themeSystem: 'System theme',
     themePreview: 'Theme Preview',
     applyTheme: 'Apply Theme',
+    
+    // Reminders
+    reminders: 'Reminders',
+    reminderSettings: 'Reminder Settings',
+    sendReminder: 'Send Reminder',
+    automaticReminder: 'Automatic Reminders',
+    dueDay: 'Due Day of Month',
+    smsEnabled: 'Enable SMS',
+    whatsappEnabled: 'Enable WhatsApp',
+    messageTemplate: 'Message Template',
+    reminderHistory: 'Reminder History',
+    sent: 'Sent',
+    delivered: 'Delivered',
+    failed: 'Failed',
+    unpaidMembers: 'Unpaid Members',
+    sendAllReminders: 'Send Reminders to All Unpaid',
+    history: 'History',
+    sentAt: 'Sent At',
   },
   ta: {
     // Nav & Sidebar
@@ -364,6 +382,24 @@ const translations = {
     themeSystem: 'கணினி தீம் (System)',
     themePreview: 'தீம் முன்னோட்டம்',
     applyTheme: 'தீம் செயல்படுத்து',
+    
+    // Reminders
+    reminders: 'நினைவூட்டல்கள்',
+    reminderSettings: 'நினைவூட்டல் அமைப்புகள்',
+    sendReminder: 'நினைவூட்டல் அனுப்பு',
+    automaticReminder: 'தானியங்கி நினைவூட்டல்கள்',
+    dueDay: 'மாதத்தின் உரிய நாள்',
+    smsEnabled: 'SMS இயக்கு',
+    whatsappEnabled: 'WhatsApp இயக்கு',
+    messageTemplate: 'செய்தி டெம்ப்ளேட்',
+    reminderHistory: 'நினைவூட்டல் வரலாறு',
+    sent: 'அனுப்பப்பட்டது',
+    delivered: 'பெறப்பட்டது',
+    failed: 'தோல்வி',
+    unpaidMembers: 'செலுத்தாத உறுப்பினர்கள்',
+    sendAllReminders: 'அனைத்து செலுத்தாத உறுப்பினர்களுக்கும் நினைவூட்டல் அனுப்பு',
+    history: 'வரலாறு',
+    sentAt: 'அனுப்பப்பட்ட நேரம்',
   }
 };
 

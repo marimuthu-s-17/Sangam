@@ -75,6 +75,9 @@ import FormDialog from '../components/FormDialog';
 import ConfirmDialog from '../components/ConfirmDialog';
 import auctionService from '../services/auctionService';
 import memberService from '../services/memberService';
+import reminderService from '../services/reminderService';
+import NotificationsIcon from '@mui/icons-material/NotificationsActive';
+import { useTranslation } from '../context/LanguageContext';
 import { formatCurrency, formatDate, getTodayDate } from '../utils/formatters';
 import { useSettings } from '../context/SettingsContext';
 
@@ -116,8 +119,17 @@ const PaidAmountInput = ({ row, isCompleted, onUpdatePaidAmount }) => {
 
 export default function Auctions() {
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
+  
+  // Reminders states
+  const [reminderSettings, setReminderSettings] = useState(null);
+  const [reminderHistory, setReminderHistory] = useState([]);
+  const [unpaidReminders, setUnpaidReminders] = useState([]);
+  const [remindersLoading, setRemindersLoading] = useState(false);
+  const [sendingReminders, setSendingReminders] = useState(false);
+  
   const [stats, setStats] = useState({
     total_auctions: 0,
     upcoming_auctions: 0,
@@ -276,6 +288,26 @@ export default function Auctions() {
       setSnack({ open: true, msg: err.message || 'Failed to fetch history details.', sev: 'error' });
     } finally {
       setHistoryLoading(false);
+    }
+  }, []);
+
+  const fetchReminderDetails = useCallback(async (auctionId) => {
+    if (!auctionId) return;
+    setRemindersLoading(true);
+    try {
+      const [settingsRes, historyRes, unpaidRes] = await Promise.all([
+        reminderService.getSettings(auctionId),
+        reminderService.getHistory(auctionId),
+        reminderService.getUnpaidMembers(auctionId)
+      ]);
+      setReminderSettings(settingsRes.data);
+      setReminderHistory(historyRes.data || []);
+      setUnpaidReminders(unpaidRes.data || []);
+    } catch (err) {
+      console.error("Failed to load reminder details", err);
+      setSnack({ open: true, msg: 'Failed to fetch reminder details.', sev: 'error' });
+    } finally {
+      setRemindersLoading(false);
     }
   }, []);
 
@@ -475,8 +507,11 @@ export default function Auctions() {
       if (detailTab === 2) {
         fetchHistoryDetails(viewingAuction.id);
       }
+      if (detailTab === 3) {
+        fetchReminderDetails(viewingAuction.id);
+      }
     }
-  }, [viewingAuction, detailTab, fetchCurrentMonthDetails, fetchHistoryDetails]);
+  }, [viewingAuction, detailTab, fetchCurrentMonthDetails, fetchHistoryDetails, fetchReminderDetails]);
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
@@ -694,9 +729,10 @@ export default function Auctions() {
             textColor="primary"
             variant="scrollable"
           >
-            <Tab label="Assigned Members" icon={<PeopleIcon />} iconPosition="start" />
+            <Tab label={t('members')} icon={<PeopleIcon />} iconPosition="start" />
             <Tab label="Upcoming Auction Round" icon={<UpcomingIcon />} iconPosition="start" />
             <Tab label="Monthly History" icon={<DateIcon />} iconPosition="start" />
+            <Tab label={t('reminders')} icon={<NotificationsIcon />} iconPosition="start" />
           </Tabs>
 
           <Box sx={{ p: 3 }}>
@@ -984,22 +1020,54 @@ export default function Auctions() {
 
                     {/* Member Contributions & Eligibility Table */}
                     <Grid size={{ xs: 12, md: 8 }}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          Member Contributions & Eligibility
+                        </Typography>
+                        {currentMonthDetails.stats.round_status === 'pending' && (
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                            startIcon={sendingReminders ? <CircularProgress size={16} color="inherit" /> : <NotificationsIcon />}
+                            disabled={sendingReminders || currentMonthDetails.auction_month.contributions.filter(c => !c.paid_status).length === 0}
+                            onClick={async () => {
+                              setSendingReminders(true);
+                              try {
+                                const res = await reminderService.sendReminders(viewingAuction.id);
+                                setSnack({ open: true, msg: res.data.message || 'Reminders sent.', sev: 'success' });
+                              } catch (err) {
+                                console.error("Failed to send reminders", err);
+                                setSnack({ open: true, msg: 'Failed to send reminders.', sev: 'error' });
+                              } finally {
+                                setSendingReminders(false);
+                              }
+                            }}
+                          >
+                            Send Reminders ({currentMonthDetails.auction_month.contributions.filter(c => !c.paid_status).length})
+                          </Button>
+                        )}
+                      </Stack>
                       <Paper sx={{ height: 400, borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                         <DataGrid
                           rows={currentMonthDetails.auction_month.contributions.map((c, idx) => ({ ...c, s_no: idx + 1 }))}
                           columns={[
-                            { field: 's_no', headerName: 'S.No', width: 60, sortable: false },
+                            { field: 's_no', headerName: 'S.No', width: 60, sortable: false, align: 'center', headerAlign: 'center' },
                             { field: 'name', headerName: 'Member Name', flex: 1, minWidth: 140 },
                             {
                               field: 'minimum_amount',
                               headerName: 'Required',
                               width: 110,
+                              align: 'right',
+                              headerAlign: 'right',
                               renderCell: (params) => formatCurrency(params.row.minimum_amount),
                             },
                             {
                               field: 'paid_amount',
                               headerName: 'Amount Paid',
                               width: 140,
+                              align: 'right',
+                              headerAlign: 'right',
                               renderCell: (params) => (
                                 <PaidAmountInput
                                   row={params.row}
@@ -1012,6 +1080,8 @@ export default function Auctions() {
                               field: 'balance',
                               headerName: 'Pending Balance',
                               width: 130,
+                              align: 'right',
+                              headerAlign: 'right',
                               renderCell: (params) => {
                                 const balance = params.row.minimum_amount - params.row.paid_amount;
                                 return formatCurrency(balance > 0 ? balance : 0);
@@ -1021,6 +1091,8 @@ export default function Auctions() {
                               field: 'is_eligible',
                               headerName: 'Eligibility',
                               width: 130,
+                              align: 'center',
+                              headerAlign: 'center',
                               renderCell: (params) => {
                                 const balance = params.row.minimum_amount - params.row.paid_amount;
                                 if (params.row.already_won) {
@@ -1036,6 +1108,8 @@ export default function Auctions() {
                               field: 'dividend_received',
                               headerName: 'Total Dividends',
                               width: 130,
+                              align: 'right',
+                              headerAlign: 'right',
                               renderCell: (params) => formatCurrency(params.row.dividend_received),
                             },
                           ]}
@@ -1098,29 +1172,31 @@ export default function Auctions() {
                           width: 18,
                           height: 18,
                           borderRadius: '50%',
-                          bgcolor: 'success.main',
-                          border: '4px solid white',
-                          boxShadow: '0 0 0 2px #4caf50'
-                        }} />
+                          bgcolor: 'background.paper',
+                          border: '2px solid',
+                          borderColor: 'primary.main',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          zIndex: 1
+                        }}>
+                          <WinnerIcon sx={{ fontSize: 10, color: 'primary.main' }} />
+                        </Box>
                         
                         <Card sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', boxShadow: 'none', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' } }}>
-                          <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-                            <Box>
-                              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                                Month {month.month_number} round
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Date Completed: {formatDate(month.auction_date)}
-                              </Typography>
-                            </Box>
-                            
-                            <Stack direction="row" spacing={3} alignItems="center">
-                              <Box sx={{ textAlign: 'right' }}>
+                          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                            <Stack direction="row" spacing={3} alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1.5}>
+                              <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Month {month.month_number} round</Typography>
+                                <Typography variant="caption" color="text.secondary">Date Completed: {formatDate(month.auction_date)}</Typography>
+                              </Box>
+                              
+                              <Box>
                                 <Typography variant="caption" color="text.secondary" display="block">Winner</Typography>
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>{month.winning_member_name}</Typography>
                               </Box>
                               
-                              <Box sx={{ textAlign: 'right' }}>
+                              <Box>
                                 <Typography variant="caption" color="text.secondary" display="block">Winning Bid</Typography>
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatCurrency(month.bid_amount)}</Typography>
                               </Box>
@@ -1147,6 +1223,204 @@ export default function Auctions() {
                       </Box>
                     ))}
                   </Stack>
+                )}
+              </Box>
+            )}
+
+            {detailTab === 3 && (
+              <Box>
+                {remindersLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <Grid container spacing={3}>
+                    {/* Settings Form */}
+                    <Grid size={{ xs: 12, md: 5 }}>
+                      <Card sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+                        <CardContent>
+                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('reminderSettings')}</Typography>
+                          
+                          <Stack spacing={2.5}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Enable Reminders</Typography>
+                                <Typography variant="caption" color="text.secondary">Allow reminder processing for this auction</Typography>
+                              </Box>
+                              <Checkbox 
+                                checked={reminderSettings?.is_enabled ?? true}
+                                onChange={async (e) => {
+                                  const updated = { ...reminderSettings, is_enabled: e.target.checked };
+                                  setReminderSettings(updated);
+                                  await reminderService.updateSettings(viewingAuction.id, { is_enabled: e.target.checked });
+                                }}
+                              />
+                            </Box>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('smsEnabled')}</Typography>
+                                <Typography variant="caption" color="text.secondary">Send text alerts to phone numbers</Typography>
+                              </Box>
+                              <Checkbox 
+                                checked={reminderSettings?.sms_enabled ?? true}
+                                onChange={async (e) => {
+                                  const updated = { ...reminderSettings, sms_enabled: e.target.checked };
+                                  setReminderSettings(updated);
+                                  await reminderService.updateSettings(viewingAuction.id, { sms_enabled: e.target.checked });
+                                }}
+                                disabled={!(reminderSettings?.is_enabled)}
+                              />
+                            </Box>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('whatsappEnabled')}</Typography>
+                                <Typography variant="caption" color="text.secondary">Send WhatsApp message notifications</Typography>
+                              </Box>
+                              <Checkbox 
+                                checked={reminderSettings?.whatsapp_enabled ?? true}
+                                onChange={async (e) => {
+                                  const updated = { ...reminderSettings, whatsapp_enabled: e.target.checked };
+                                  setReminderSettings(updated);
+                                  await reminderService.updateSettings(viewingAuction.id, { whatsapp_enabled: e.target.checked });
+                                }}
+                                disabled={!(reminderSettings?.is_enabled)}
+                              />
+                            </Box>
+
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <Box>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{t('automaticReminder')}</Typography>
+                                <Typography variant="caption" color="text.secondary">Schedule automated messages on due day</Typography>
+                              </Box>
+                              <Checkbox 
+                                checked={reminderSettings?.automatic_reminder ?? false}
+                                onChange={async (e) => {
+                                  const updated = { ...reminderSettings, automatic_reminder: e.target.checked };
+                                  setReminderSettings(updated);
+                                  await reminderService.updateSettings(viewingAuction.id, { automatic_reminder: e.target.checked });
+                                }}
+                                disabled={!(reminderSettings?.is_enabled)}
+                              />
+                            </Box>
+
+                            <TextField
+                              type="number"
+                              label={t('dueDay')}
+                              size="small"
+                              fullWidth
+                              value={reminderSettings?.due_day ?? 10}
+                              onChange={(e) => {
+                                setReminderSettings({ ...reminderSettings, due_day: parseInt(e.target.value) || 10 });
+                              }}
+                              onBlur={async () => {
+                                await reminderService.updateSettings(viewingAuction.id, { due_day: reminderSettings?.due_day ?? 10 });
+                                setSnack({ open: true, msg: 'Due day updated.', sev: 'success' });
+                              }}
+                              disabled={!(reminderSettings?.is_enabled)}
+                            />
+
+                            <TextField
+                              label={t('messageTemplate')}
+                              multiline
+                              rows={4}
+                              fullWidth
+                              value={reminderSettings?.template ?? ''}
+                              onChange={(e) => {
+                                setReminderSettings({ ...reminderSettings, template: e.target.value });
+                              }}
+                              onBlur={async () => {
+                                await reminderService.updateSettings(viewingAuction.id, { template: reminderSettings?.template ?? '' });
+                                setSnack({ open: true, msg: 'Message template saved.', sev: 'success' });
+                              }}
+                              disabled={!(reminderSettings?.is_enabled)}
+                              helperText="Tags: {member_name}, {auction_name}, {contribution_amount}, {due_date}, {payment_status}"
+                            />
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+
+                    {/* Manual Send Reminders & History */}
+                    <Grid size={{ xs: 12, md: 7 }}>
+                      <Stack spacing={3}>
+                        {/* Send Reminders Card */}
+                        <Card sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+                          <CardContent>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1.5 }}>{t('sendReminder')}</Typography>
+                            <Typography variant="body2" sx={{ mb: 2 }}>
+                              There are currently <strong>{unpaidReminders.length}</strong> member(s) with unpaid contributions for month {viewingAuction.current_month}.
+                            </Typography>
+
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              startIcon={sendingReminders ? <CircularProgress size={20} color="inherit" /> : <NotificationsIcon />}
+                              disabled={sendingReminders || unpaidReminders.length === 0 || !reminderSettings?.is_enabled}
+                              onClick={async () => {
+                                setSendingReminders(true);
+                                try {
+                                  const res = await reminderService.sendReminders(viewingAuction.id);
+                                  setSnack({ open: true, msg: res.data.message || 'Reminders sent.', sev: 'success' });
+                                  await fetchReminderDetails(viewingAuction.id);
+                                } catch (err) {
+                                  console.error("Failed to send reminders", err);
+                                  setSnack({ open: true, msg: 'Failed to send reminders.', sev: 'error' });
+                                } finally {
+                                  setSendingReminders(false);
+                                }
+                              }}
+                            >
+                              {t('sendAllReminders')}
+                            </Button>
+                          </CardContent>
+                        </Card>
+
+                        {/* History Table */}
+                        <Card sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+                          <CardContent>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>{t('reminderHistory')}</Typography>
+                            {reminderHistory.length === 0 ? (
+                              <Box sx={{ p: 3, textAlign: 'center', border: '1px dashed', borderColor: 'divider', borderRadius: 2 }}>
+                                <Typography variant="body2" color="text.secondary">No reminder history logs found.</Typography>
+                              </Box>
+                            ) : (
+                              <Box sx={{ overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                                  <thead>
+                                    <tr style={{ borderBottom: '1px solid var(--mui-palette-divider)', textAlign: 'left' }}>
+                                      <th style={{ padding: '8px 4px' }}>Member</th>
+                                      <th style={{ padding: '8px 4px' }}>Type</th>
+                                      <th style={{ padding: '8px 4px' }}>Status</th>
+                                      <th style={{ padding: '8px 4px' }}>Sent At</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {reminderHistory.map((h) => (
+                                      <tr key={h.id} style={{ borderBottom: '1px solid var(--mui-palette-divider)' }}>
+                                        <td style={{ padding: '8px 4px', fontWeight: 600 }}>{h.member_name}</td>
+                                        <td style={{ padding: '8px 4px', textTransform: 'uppercase' }}>{h.reminder_type}</td>
+                                        <td style={{ padding: '8px 4px' }}>
+                                          <Chip 
+                                            label={h.status.toUpperCase()} 
+                                            size="small" 
+                                            color={h.status === 'delivered' ? 'success' : h.status === 'sent' ? 'info' : 'error'}
+                                            sx={{ fontSize: '0.7rem', height: 18 }}
+                                          />
+                                        </td>
+                                        <td style={{ padding: '8px 4px' }}>{new Date(h.sent_at).toLocaleString()}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </Box>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </Stack>
+                    </Grid>
+                  </Grid>
                 )}
               </Box>
             )}
@@ -1358,6 +1632,51 @@ export default function Auctions() {
     );
   }
 
+  const mainAuctionsColumns = [
+    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
+    { field: 'name', headerName: 'Auction Name', flex: 1.2, minWidth: 150, align: 'left', headerAlign: 'left' },
+    { field: 'members_count', headerName: 'Members', width: 110, align: 'center', headerAlign: 'center' },
+    { field: 'monthly_contribution', headerName: 'Contribution', width: 150, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+    { field: 'commission', headerName: 'Commission', width: 130, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+    { field: 'prize_amount', headerName: 'Prize Amount', width: 140, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+    { field: 'total_months', headerName: 'Duration', width: 110, align: 'center', headerAlign: 'center', renderCell: (p) => `${p.value} Months` },
+    { field: 'current_month', headerName: 'Progress', width: 110, align: 'center', headerAlign: 'center', renderCell: (params) => `${params.row.current_month}/${params.row.total_months}` },
+    { field: 'start_date', headerName: 'Start Date', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => formatDate(p.value) },
+    { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 260,
+      sortable: false,
+      align: 'right',
+      headerAlign: 'right',
+      renderCell: (params) => (
+        <Box>
+          <Button
+            variant="contained"
+            color="primary"
+            size="small"
+            startIcon={<AuctionIcon />}
+            onClick={() => setViewingAuction(params.row)}
+            sx={{ mr: 1, py: 0.5 }}
+          >
+            Open
+          </Button>
+          <Tooltip title="Edit">
+            <IconButton size="small" onClick={(e) => openEdit(params.row, e)} color="primary">
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <IconButton size="small" onClick={(e) => openDelete(params.row, e)} color="error" disabled={params.row.status === 'cancelled'}>
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
+
   return (
     <Box sx={{ position: 'relative', pb: 4 }}>
       <PageHeader
@@ -1439,142 +1758,28 @@ export default function Auctions() {
         <Box sx={{ flexGrow: 1 }} />
       </Box>
 
-      {/* Accordion Auction List */}
+      {/* DataGrid Auction List */}
       {loading ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
           <Skeleton variant="rectangular" height={50} sx={{ borderRadius: 2 }} />
           <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
         </Box>
-      ) : rows.length === 0 ? (
-        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 2.5, border: '1px dashed', borderColor: 'divider' }}>
-          <Typography color="text.secondary">No auctions found matching the filters.</Typography>
-        </Paper>
       ) : (
-        <Box>
-          {/* Header Row */}
-          <Paper sx={{ p: 2, bgcolor: '#F8F5F0', color: '#71717A', borderRadius: 2, display: { xs: 'none', md: 'block' }, mb: 1 }}>
-            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              <Grid size={{ md: 0.8 }}>ID</Grid>
-              <Grid size={{ md: 3 }}>Auction Name</Grid>
-              <Grid size={{ md: 1.2 }} sx={{ textAlign: 'center' }}>Members</Grid>
-              <Grid size={{ md: 2 }} sx={{ textAlign: 'right' }}>Prize Amount</Grid>
-              <Grid size={{ md: 1.5 }} sx={{ textAlign: 'center' }}>Progress</Grid>
-              <Grid size={{ md: 1.5 }}>Start Date</Grid>
-              <Grid size={{ md: 2 }} sx={{ textAlign: 'center' }}>Status</Grid>
-            </Grid>
-          </Paper>
-
-          <Stack spacing={0.75}>
-            {rows.map((auction) => {
-              const isExpanded = expandedAuctionId === auction.id;
-              return (
-                <Accordion
-                  key={auction.id}
-                  expanded={isExpanded}
-                  onChange={handleAuctionAccordion(auction.id)}
-                  sx={{
-                    borderRadius: '12px !important',
-                    border: '1px solid',
-                    borderColor: isExpanded ? 'primary.main' : 'divider',
-                    boxShadow: isExpanded ? '0 8px 24px rgba(26, 35, 126, 0.08)' : 'none',
-                    '&::before': { display: 'none' },
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon sx={{ color: isExpanded ? 'primary.main' : 'text.secondary' }} />}
-                    sx={{
-                      py: 1.5,
-                      px: 2.5,
-                      '& .MuiAccordionSummary-content': { margin: 0 },
-                    }}
-                  >
-                    <Grid container spacing={2} sx={{ alignItems: 'center', fontSize: '0.875rem' }}>
-                      <Grid size={{ xs: 12, md: 0.8 }} sx={{ fontWeight: 700 }}>#{auction.id}</Grid>
-                      <Grid size={{ xs: 12, md: 3 }} sx={{ fontWeight: 600 }}>{auction.name}</Grid>
-                      <Grid size={{ xs: 6, md: 1.2 }} sx={{ textAlign: 'center' }}>{auction.members_count}</Grid>
-                      <Grid size={{ xs: 6, md: 2 }} sx={{ md: { textAlign: 'right' }, color: 'primary.main', fontWeight: 700 }}>
-                        {formatCurrency(auction.prize_amount)}
-                      </Grid>
-                      <Grid size={{ xs: 6, md: 1.5 }} sx={{ textAlign: 'center', fontWeight: 600 }}>
-                        {auction.current_month}/{auction.total_months}
-                      </Grid>
-                      <Grid size={{ xs: 6, md: 1.5 }}>{formatDate(auction.start_date)}</Grid>
-                      <Grid size={{ xs: 6, md: 2 }} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'center' } }}>
-                        <StatusChip status={auction.status} />
-                      </Grid>
-                    </Grid>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ px: 2.5, pb: 2, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#FAFAF8' }}>
-                    <Grid container spacing={2} sx={{ mb: 2 }}>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Monthly Contribution</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatCurrency(auction.monthly_contribution)}</Typography>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Commission</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatCurrency(auction.commission)}</Typography>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Duration</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{auction.total_months} months</Typography>
-                      </Grid>
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Description</Typography>
-                        <Typography variant="body2" sx={{ fontStyle: 'italic' }}>{auction.description || 'None'}</Typography>
-                      </Grid>
-                    </Grid>
-
-                    <Divider sx={{ mb: 1.5 }} />
-
-                    {/* Actions Panel */}
-                    <Stack direction="row" spacing={2} flexWrap="wrap" gap={1.5}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        startIcon={<AuctionIcon />}
-                        onClick={() => setViewingAuction(auction)}
-                      >
-                        Open Auction
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        startIcon={<EditIcon />}
-                        onClick={(e) => openEdit(auction, e)}
-                      >
-                        Edit Auction
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        startIcon={<DeleteIcon />}
-                        onClick={(e) => openDelete(auction, e)}
-                        disabled={auction.status === 'cancelled'}
-                      >
-                        Cancel Auction
-                      </Button>
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })}
-          </Stack>
-
-          <TablePagination
-            component="div"
-            count={total}
-            page={paginationModel.page}
-            onPageChange={(e, newPage) => setPaginationModel(prev => ({ ...prev, page: newPage }))}
-            rowsPerPage={paginationModel.pageSize}
-            onRowsPerPageChange={(e) => setPaginationModel(prev => ({ ...prev, pageSize: parseInt(e.target.value, 10), page: 0 }))}
-            rowsPerPageOptions={[10, 20, 50, 100]}
-            sx={{ mt: 2 }}
+        <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+          <DataGrid
+            rows={rows}
+            columns={mainAuctionsColumns}
+            rowCount={total}
+            loading={loading}
+            paginationMode="server"
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            pageSizeOptions={[10, 20, 50, 100]}
+            disableRowSelectionOnClick
+            rowHeight={52}
+            sx={{ border: 0 }}
           />
-        </Box>
+        </Paper>
       )}
 
       {/* Floating Add Button */}

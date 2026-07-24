@@ -27,15 +27,17 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const auctionColumns = [
-    { field: 'auction_number', headerName: 'Auction #', flex: 0.5, minWidth: 90 },
+    { field: 'auction_number', headerName: 'Auction #', flex: 0.5, minWidth: 90, align: 'center', headerAlign: 'center' },
     { field: 'auction_date', headerName: t('date'), flex: 0.8, minWidth: 110, renderCell: (p) => formatDate(p.value) },
     { field: 'member_name', headerName: 'Winner', flex: 1, minWidth: 130 },
-    { field: 'amount', headerName: t('amount'), flex: 0.8, minWidth: 110, renderCell: (p) => formatCurrency(p.value) },
+    { field: 'amount', headerName: t('amount'), flex: 0.8, minWidth: 110, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
     {
       field: 'status',
       headerName: t('status'),
       flex: 0.7,
       minWidth: 110,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (p) => <StatusChip status={p.value} />,
     },
   ];
@@ -47,9 +49,11 @@ export default function Dashboard() {
       headerName: t('txnType'),
       flex: 0.7,
       minWidth: 100,
+      align: 'center',
+      headerAlign: 'center',
       renderCell: (p) => <StatusChip status={p.value} />,
     },
-    { field: 'amount', headerName: t('amount'), flex: 0.8, minWidth: 110, renderCell: (p) => formatCurrency(p.value) },
+    { field: 'amount', headerName: t('amount'), flex: 0.8, minWidth: 110, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
     { field: 'transaction_date', headerName: t('date'), flex: 0.8, minWidth: 110, renderCell: (p) => formatDate(p.value) },
     { field: 'description', headerName: t('description'), flex: 1.2, minWidth: 150 },
   ];

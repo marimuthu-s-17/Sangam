@@ -31,6 +31,7 @@ import {
   Paper,
   TablePagination,
 } from '@mui/material';
+import { useTranslation } from '../context/LanguageContext';
 
 import {
   Edit as EditIcon,
@@ -65,6 +66,7 @@ import memberService from '../services/memberService';
 import { formatDate, getTodayDate } from '../utils/formatters';
 
 export default function Members() {
+  const { t } = useTranslation();
   const [members, setMembers] = useState([]);
   const [total, setTotal] = useState(0);
   const [stats, setStats] = useState({
@@ -298,52 +300,52 @@ export default function Members() {
 
 
   return (
-    <Box sx={{ position: 'relative', pb: 8 }}>
+    <Box sx={{ position: 'relative', pb: 4 }}>
       <PageHeader
-        title="Members Management"
-        subtitle="Organize, search, filter and audit all community members"
-        buttonText="Add Member"
+        title={t('membersTitle')}
+        subtitle={t('membersSubtitle')}
+        buttonText={t('addMember')}
         onButtonClick={openAdd}
       />
 
       {/* Stats Cards Section */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 2.5 }}>
         {[
-          { title: 'Total Members', value: stats.total_members, icon: <PeopleIcon fontSize="large" />, color: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)' },
-          { title: 'Active Members', value: stats.active_members, icon: <ActiveIcon fontSize="large" />, color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
-          { title: 'Inactive Members', value: stats.inactive_members, icon: <InactiveIcon fontSize="large" />, color: 'linear-gradient(135deg, #ed213a 0%, #93291e 100%)' },
-          { title: 'Recently Joined', value: stats.recently_joined, icon: <NewIcon fontSize="large" />, color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
+          { title: t('totalMembers'), value: stats.total_members, icon: <PeopleIcon />, color: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)' },
+          { title: t('activeMembers'), value: stats.active_members, icon: <ActiveIcon />, color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+          { title: t('inactiveMembers'), value: stats.inactive_members, icon: <InactiveIcon />, color: 'linear-gradient(135deg, #ed213a 0%, #93291e 100%)' },
+          { title: t('recentlyJoined'), value: stats.recently_joined, icon: <NewIcon />, color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
         ].map((item, idx) => (
           <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
             <Card sx={{
               background: item.color,
               color: 'white',
-              borderRadius: 3,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+              borderRadius: 2.5,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
               position: 'relative',
               overflow: 'hidden',
             }}>
-              <CardContent sx={{ position: 'relative', zIndex: 2 }}>
+              <CardContent sx={{ position: 'relative', zIndex: 2, p: 2, '&:last-child': { pb: 2 } }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
-                    <Typography variant="subtitle2" sx={{ opacity: 0.8, fontWeight: 500 }}>{item.title}</Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.title}</Typography>
                     {statsLoading ? (
-                      <Skeleton width={80} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
+                      <Skeleton width={60} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
                     ) : (
-                      <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{item.value}</Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5 }}>{item.value}</Typography>
                     )}
                   </Box>
-                  <Box sx={{ opacity: 0.7 }}>{item.icon}</Box>
+                  <Box sx={{ opacity: 0.6 }}>{item.icon}</Box>
                 </Box>
               </CardContent>
               <Box sx={{
                 position: 'absolute',
-                top: -30,
-                right: -30,
-                width: 120,
-                height: 120,
+                top: -20,
+                right: -20,
+                width: 80,
+                height: 80,
                 borderRadius: '50%',
-                background: 'rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.08)',
                 zIndex: 1,
               }} />
             </Card>
@@ -352,17 +354,17 @@ export default function Members() {
       </Grid>
 
       {/* Search & Actions Bar */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', gap: 1.5, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
           variant="outlined"
-          placeholder="Search name, phone, address..."
+          placeholder={t('searchPlaceholder')}
           value={search}
           onChange={handleSearchChange}
           size="small"
-          sx={{ flexGrow: 1, maxWidth: 400, borderRadius: 2 }}
+          sx={{ flexGrow: 1, maxWidth: 360 }}
           slotProps={{
             input: {
-              startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />,
+              startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1, fontSize: 18 }} />,
             }
           }}
         />
@@ -371,9 +373,9 @@ export default function Members() {
           variant="outlined"
           startIcon={<FilterIcon />}
           onClick={() => setFilterOpen(true)}
-          sx={{ borderRadius: 2 }}
+          size="small"
         >
-          Filters
+          {t('filters')}
         </Button>
 
         <Box sx={{ flexGrow: 1 }} />
@@ -383,9 +385,9 @@ export default function Members() {
           startIcon={<ImportIcon />}
           color="secondary"
           onClick={() => setImportOpen(true)}
-          sx={{ borderRadius: 2 }}
+          size="small"
         >
-          Import
+          {t('import')}
         </Button>
 
         <Button
@@ -393,9 +395,9 @@ export default function Members() {
           startIcon={<ExportIcon />}
           color="primary"
           onClick={handleExportCSV}
-          sx={{ borderRadius: 2 }}
+          size="small"
         >
-          Export CSV
+          {t('exportCsv')}
         </Button>
       </Box>
 
@@ -412,8 +414,8 @@ export default function Members() {
       ) : (
         <Box>
           {/* Table Header Row */}
-          <Paper sx={{ p: 2, bgcolor: 'primary.dark', color: 'white', borderRadius: 2, display: { xs: 'none', md: 'block' }, mb: 1 }}>
-            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
+          <Paper sx={{ px: 2, py: 1.25, bgcolor: '#F8F5F0', color: '#71717A', borderRadius: 2.5, display: { xs: 'none', md: 'block' }, mb: 0.75, border: '1px solid #EDEAE5' }}>
+            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               <Grid size={{ md: 0.8 }}>ID</Grid>
               <Grid size={{ md: 3 }}>Name</Grid>
               <Grid size={{ md: 2 }}>Phone</Grid>
@@ -424,7 +426,7 @@ export default function Members() {
             </Grid>
           </Paper>
 
-          <Stack spacing={1.5}>
+          <Stack spacing={0.75}>
             {members.map((m) => {
               const isExpanded = expandedMemberId === m.id;
               return (
@@ -433,62 +435,63 @@ export default function Members() {
                   expanded={isExpanded}
                   onChange={handleMemberAccordion(m.id)}
                   sx={{
-                    borderRadius: '12px !important',
+                    borderRadius: '10px !important',
                     border: '1px solid',
-                    borderColor: isExpanded ? 'primary.main' : 'divider',
-                    boxShadow: isExpanded ? '0 8px 24px rgba(26, 35, 126, 0.08)' : 'none',
+                    borderColor: isExpanded ? '#D4CFC7' : '#EDEAE5',
+                    boxShadow: isExpanded ? '0 4px 16px rgba(0, 0, 0, 0.06)' : 'none',
                     '&::before': { display: 'none' },
-                    transition: 'all 0.2s ease',
+                    transition: 'all 0.15s ease',
                   }}
                 >
                   <AccordionSummary
-                    expandIcon={<ExpandMoreIcon sx={{ color: isExpanded ? 'primary.main' : 'text.secondary' }} />}
+                    expandIcon={<ExpandMoreIcon sx={{ color: isExpanded ? 'primary.main' : 'text.secondary', fontSize: 20 }} />}
                     sx={{
-                      py: 1.5,
-                      px: 2.5,
-                      '& .MuiAccordionSummary-content': { margin: 0 },
+                      py: 0,
+                      px: 2,
+                      minHeight: '44px !important',
+                      '& .MuiAccordionSummary-content': { margin: '8px 0 !important' },
                     }}
                   >
-                    <Grid container spacing={2} sx={{ alignItems: 'center', fontSize: '0.875rem' }}>
-                      <Grid size={{ xs: 12, md: 0.8 }} sx={{ fontWeight: 700 }}>#{m.id}</Grid>
+                    <Grid container spacing={1.5} sx={{ alignItems: 'center', fontSize: '0.82rem' }}>
+                      <Grid size={{ xs: 12, md: 0.8 }} sx={{ fontWeight: 700, color: 'text.secondary', fontSize: '0.78rem' }}>#{m.id}</Grid>
                       <Grid size={{ xs: 12, md: 3 }} sx={{ fontWeight: 600 }}>{m.name}</Grid>
-                      <Grid size={{ xs: 6, md: 2 }}>{m.phone}</Grid>
-                      <Grid size={{ xs: 3, md: 1 }}>{m.age}</Grid>
-                      <Grid size={{ xs: 3, md: 1.2 }} sx={{ textTransform: 'capitalize' }}>{m.gender || '—'}</Grid>
-                      <Grid size={{ xs: 6, md: 2 }}>{formatDate(m.joined_date)}</Grid>
+                      <Grid size={{ xs: 6, md: 2 }} sx={{ color: 'text.secondary' }}>{m.phone}</Grid>
+                      <Grid size={{ xs: 3, md: 1 }} sx={{ color: 'text.secondary' }}>{m.age}</Grid>
+                      <Grid size={{ xs: 3, md: 1.2 }} sx={{ textTransform: 'capitalize', color: 'text.secondary' }}>{m.gender || '—'}</Grid>
+                      <Grid size={{ xs: 6, md: 2 }} sx={{ color: 'text.secondary' }}>{formatDate(m.joined_date)}</Grid>
                       <Grid size={{ xs: 6, md: 2 }} sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'center' } }}>
                         <StatusChip status={m.status} />
                       </Grid>
                     </Grid>
                   </AccordionSummary>
-                  <AccordionDetails sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
-                    <Grid container spacing={3} sx={{ mb: 3 }}>
+                  <AccordionDetails sx={{ px: 2.5, pb: 2, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#FAFAF8' }}>
+                    <Grid container spacing={2} sx={{ mb: 2 }}>
                       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Phone</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.phone}</Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Phone</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{m.phone}</Typography>
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Address</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.address || '—'}</Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Address</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{m.address || '—'}</Typography>
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Joined Date</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatDate(m.joined_date)}</Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Joined Date</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{formatDate(m.joined_date)}</Typography>
                       </Grid>
                       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <Typography variant="caption" color="text.secondary" display="block">Notes</Typography>
-                        <Typography variant="body2" sx={{ fontStyle: 'italic' }}>{m.notes || 'None'}</Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Notes</Typography>
+                        <Typography variant="body2" sx={{ fontStyle: 'italic', fontSize: '0.84rem' }}>{m.notes || 'None'}</Typography>
                       </Grid>
                     </Grid>
 
-                    <Divider sx={{ mb: 2.5 }} />
+                    <Divider sx={{ mb: 1.5 }} />
 
                     {/* Actions Panel */}
-                    <Stack direction="row" spacing={2} flexWrap="wrap" gap={1.5}>
+                    <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
                       <Button
                         variant="contained"
                         color="info"
-                        size="medium"
+                        size="small"
                         startIcon={<ViewIcon />}
                         onClick={() => openDetail(m)}
                       >
@@ -497,20 +500,20 @@ export default function Members() {
                       <Button
                         variant="outlined"
                         color="primary"
-                        size="medium"
+                        size="small"
                         startIcon={<EditIcon />}
                         onClick={(e) => openEdit(m, e)}
                       >
-                        Edit Member
+                        Edit
                       </Button>
                       <Button
                         variant="outlined"
                         color="error"
-                        size="medium"
+                        size="small"
                         startIcon={<DeleteIcon />}
                         onClick={(e) => openDelete(m, e)}
                       >
-                        Delete Member
+                        Delete
                       </Button>
                     </Stack>
                   </AccordionDetails>
@@ -537,11 +540,11 @@ export default function Members() {
         color="primary"
         aria-label="add"
         onClick={openAdd}
+        size="medium"
         sx={{
           position: 'fixed',
-          bottom: 24,
-          right: 24,
-          boxShadow: '0 8px 24px rgba(26,35,126,0.3)',
+          bottom: 20,
+          right: 20,
         }}
       >
         <AddIcon />
@@ -552,16 +555,17 @@ export default function Members() {
         anchor="right"
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        slotProps={{ paper: { sx: { width: 320, p: 3 } } }}
+        slotProps={{ paper: { sx: { width: 290, p: 2.5 } } }}
       >
-        <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>Filter Members</Typography>
-        <Stack spacing={3}>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, fontSize: '1rem' }}>Filter Members</Typography>
+        <Stack spacing={2}>
           <TextField
             select
             label="Status"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             fullWidth
+            size="small"
           >
             <MenuItem value="">All Statuses</MenuItem>
             <MenuItem value="active">Active</MenuItem>
@@ -574,13 +578,14 @@ export default function Members() {
             value={ageFilter}
             onChange={(e) => setAgeFilter(e.target.value)}
             fullWidth
+            size="small"
             slotProps={{ input: { min: 18, max: 100 } }}
           />
 
-          <Button variant="contained" onClick={handleApplyFilters} fullWidth>
+          <Button variant="contained" onClick={handleApplyFilters} fullWidth size="small">
             Apply Filters
           </Button>
-          <Button variant="outlined" onClick={handleClearFilters} fullWidth>
+          <Button variant="outlined" onClick={handleClearFilters} fullWidth size="small">
             Clear All
           </Button>
         </Stack>
@@ -591,7 +596,7 @@ export default function Members() {
         anchor="right"
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
-        slotProps={{ paper: { sx: { width: { xs: '100%', sm: 450 }, p: 3 } } }}
+        slotProps={{ paper: { sx: { width: { xs: '100%', sm: 400 }, p: 2.5 } } }}
       >
         {selectedMember && (
           <Box>

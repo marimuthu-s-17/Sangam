@@ -18,39 +18,41 @@ import dashboardService from '../services/dashboardService';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { CustomBarChart, CustomPieChart, CustomAreaChart } from '../components/Charts';
 import { useSettings } from '../context/SettingsContext';
-
-const auctionColumns = [
-  { field: 'auction_number', headerName: 'Auction #', flex: 0.5, minWidth: 90 },
-  { field: 'auction_date', headerName: 'Date', flex: 0.8, minWidth: 110, renderCell: (p) => formatDate(p.value) },
-  { field: 'member_name', headerName: 'Winner', flex: 1, minWidth: 130 },
-  { field: 'amount', headerName: 'Amount', flex: 0.8, minWidth: 110, renderCell: (p) => formatCurrency(p.value) },
-  {
-    field: 'status',
-    headerName: 'Status',
-    flex: 0.7,
-    minWidth: 110,
-    renderCell: (p) => <StatusChip status={p.value} />,
-  },
-];
-
-const transactionColumns = [
-  { field: 'member_name', headerName: 'Member', flex: 1, minWidth: 130 },
-  {
-    field: 'transaction_type',
-    headerName: 'Type',
-    flex: 0.7,
-    minWidth: 100,
-    renderCell: (p) => <StatusChip status={p.value} />,
-  },
-  { field: 'amount', headerName: 'Amount', flex: 0.8, minWidth: 110, renderCell: (p) => formatCurrency(p.value) },
-  { field: 'transaction_date', headerName: 'Date', flex: 0.8, minWidth: 110, renderCell: (p) => formatDate(p.value) },
-  { field: 'description', headerName: 'Description', flex: 1.2, minWidth: 150 },
-];
+import { useTranslation } from '../context/LanguageContext';
 
 export default function Dashboard() {
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const auctionColumns = [
+    { field: 'auction_number', headerName: 'Auction #', flex: 0.5, minWidth: 90 },
+    { field: 'auction_date', headerName: t('date'), flex: 0.8, minWidth: 110, renderCell: (p) => formatDate(p.value) },
+    { field: 'member_name', headerName: 'Winner', flex: 1, minWidth: 130 },
+    { field: 'amount', headerName: t('amount'), flex: 0.8, minWidth: 110, renderCell: (p) => formatCurrency(p.value) },
+    {
+      field: 'status',
+      headerName: t('status'),
+      flex: 0.7,
+      minWidth: 110,
+      renderCell: (p) => <StatusChip status={p.value} />,
+    },
+  ];
+
+  const transactionColumns = [
+    { field: 'member_name', headerName: 'Member', flex: 1, minWidth: 130 },
+    {
+      field: 'transaction_type',
+      headerName: t('txnType'),
+      flex: 0.7,
+      minWidth: 100,
+      renderCell: (p) => <StatusChip status={p.value} />,
+    },
+    { field: 'amount', headerName: t('amount'), flex: 0.8, minWidth: 110, renderCell: (p) => formatCurrency(p.value) },
+    { field: 'transaction_date', headerName: t('date'), flex: 0.8, minWidth: 110, renderCell: (p) => formatDate(p.value) },
+    { field: 'description', headerName: t('description'), flex: 1.2, minWidth: 150 },
+  ];
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -69,11 +71,11 @@ export default function Dashboard() {
   if (loading) {
     return (
       <Box>
-        <Typography variant="h4" sx={{ fontWeight: 800, mb: 3 }}>Dashboard</Typography>
-        <Grid container spacing={3}>
+        <Typography variant="h4" sx={{ fontWeight: 800, mb: 2 }}>{t('dashboardTitle')}</Typography>
+        <Grid container spacing={2}>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
             <Grid size={{ xs: 12, sm: 6, md: 4, lg: 1.33 }} key={i}>
-              <Skeleton variant="rounded" height={100} sx={{ borderRadius: 3 }} />
+              <Skeleton variant="rounded" height={80} sx={{ borderRadius: 2.5 }} />
             </Grid>
           ))}
         </Grid>
@@ -83,83 +85,70 @@ export default function Dashboard() {
 
   // Define recent activities helpers
   const activities = [
-    { label: 'Latest Member Registered', data: data?.recent_activity?.latest_member, format: (v) => `${v.name} joined on ${formatDate(v.date)} (Status: ${v.status})`, icon: <PeopleIcon sx={{ color: '#1e3c72' }} /> },
-    { label: 'Latest Auction Winner Payout', data: data?.recent_activity?.latest_winner, format: (v) => `${v.name} won ${v.auction_name} (Round ${v.month_number}) on ${formatDate(v.date)}`, icon: <GavelIcon sx={{ color: '#11998e' }} /> },
-    { label: 'Latest Expense Record', data: data?.recent_activity?.latest_expense, format: (v) => `₹${v.amount.toLocaleString('en-IN')} for ${v.description} (${v.category}) on ${formatDate(v.date)}`, icon: <ReceiptIcon sx={{ color: '#f5af19' }} /> },
-    { label: 'Latest Loan Disbursed', data: data?.recent_activity?.latest_loan, format: (v) => `₹${v.amount.toLocaleString('en-IN')} issued to ${v.borrower_name} on ${formatDate(v.date)}`, icon: <AccountBalanceIcon sx={{ color: '#606c88' }} /> },
-    { label: 'Latest Loan Interest Payment', data: data?.recent_activity?.latest_interest_payment, format: (v) => `₹${v.interest_payment.toLocaleString('en-IN')} interest collected from ${v.borrower_name} on ${formatDate(v.date)}`, icon: <PaymentIcon sx={{ color: '#ed213a' }} /> },
+    { label: 'Latest Member Registered', data: data?.recent_activity?.latest_member, format: (v) => `${v.name} joined on ${formatDate(v.date)} (Status: ${v.status})`, icon: <PeopleIcon sx={{ color: '#1e3c72', fontSize: 18 }} /> },
+    { label: 'Latest Auction Winner Payout', data: data?.recent_activity?.latest_winner, format: (v) => `${v.name} won ${v.auction_name} (Round ${v.month_number}) on ${formatDate(v.date)}`, icon: <GavelIcon sx={{ color: '#11998e', fontSize: 18 }} /> },
+    { label: 'Latest Expense Record', data: data?.recent_activity?.latest_expense, format: (v) => `₹${v.amount.toLocaleString('en-IN')} for ${v.description} (${v.category}) on ${formatDate(v.date)}`, icon: <ReceiptIcon sx={{ color: '#f5af19', fontSize: 18 }} /> },
+    { label: 'Latest Loan Disbursed', data: data?.recent_activity?.latest_loan, format: (v) => `₹${v.amount.toLocaleString('en-IN')} issued to ${v.borrower_name} on ${formatDate(v.date)}`, icon: <AccountBalanceIcon sx={{ color: '#606c88', fontSize: 18 }} /> },
+    { label: 'Latest Loan Interest Payment', data: data?.recent_activity?.latest_interest_payment, format: (v) => `₹${v.interest_payment.toLocaleString('en-IN')} interest collected from ${v.borrower_name} on ${formatDate(v.date)}`, icon: <PaymentIcon sx={{ color: '#ed213a', fontSize: 18 }} /> },
   ].filter(act => act.data);
 
   return (
-    <Box sx={{ pb: 5 }}>
-      <Box
-        sx={{
-          p: { xs: 2.2, sm: 3 },
-          mb: 3,
-          borderRadius: 4,
-          background: 'linear-gradient(135deg, #FFF8EA 0%, #FFFFFF 100%)',
-          border: '1px solid #F0EBE2',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.04)',
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          justifyContent: 'space-between',
-          alignItems: { xs: 'flex-start', md: 'center' },
-          gap: 2,
-        }}
-      >
+    <Box sx={{ pb: 3 }}>
+      {/* Page Header */}
+      <Box sx={{ mb: 2.5, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 1.5 }}>
         <Box>
-          <Typography variant="caption" sx={{ color: '#F4A623', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-            Operational snapshot
+          <Typography variant="caption" sx={{ color: '#F4A623', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.68rem' }}>
+            {t('operationalSnapshot')}
           </Typography>
-          <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.5, letterSpacing: '-0.02em' }}>
-            Dashboard
+          <Typography variant="h4" sx={{ fontWeight: 800, mt: 0.25, letterSpacing: '-0.03em' }}>
+            {t('dashboardTitle')}
           </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.6, maxWidth: 700 }}>
-            Overview of your {settings?.community_name || 'Sangam'} auction metrics, financial statements, and operations.
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.25 }}>
+            {t('dashboardSubtitle')}
           </Typography>
         </Box>
-        <Box sx={{ px: 2, py: 1.2, borderRadius: 999, backgroundColor: '#FFF6E8', color: '#C77F00', fontWeight: 700, fontSize: '0.86rem' }}>
-          Live update • {settings?.community_name || 'Sangam'}
+        <Box sx={{ px: 1.5, py: 0.6, borderRadius: 2, backgroundColor: '#FFF6E8', color: '#C77F00', fontWeight: 600, fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+          {t('liveUpdate')} • {settings?.community_name || 'Sangam'}
         </Box>
       </Box>
 
       {/* 9 Summary Cards */}
-      <Grid container spacing={2.5} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2.66 }}>
-          <StatCard title="Total Members" value={data?.total_members || 0} icon={<PeopleIcon />} color="primary" />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2.66 }}>
-          <StatCard title="Active Auctions" value={data?.active_auctions || 0} icon={<GavelIcon />} color="info" />
+          <StatCard title={t('totalMembers')} value={data?.total_members || 0} icon={<PeopleIcon />} color="primary" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2.66 }}>
-          <StatCard title="Auctions Completed" value={data?.completed_auctions || 0} icon={<GavelIcon />} color="secondary" />
+          <StatCard title={t('activeAuctions')} value={data?.active_auctions || 0} icon={<GavelIcon />} color="info" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2.66 }}>
+          <StatCard title={t('auctionsCompleted')} value={data?.completed_auctions || 0} icon={<GavelIcon />} color="secondary" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-          <StatCard title="Current Month Collection" value={formatCurrency(data?.current_month_collection)} icon={<TrendingUpIcon />} color="success" />
+          <StatCard title={t('currentMonthCollection')} value={formatCurrency(data?.current_month_collection)} icon={<TrendingUpIcon />} color="success" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-          <StatCard title="Total Expenses" value={formatCurrency(data?.total_expenses)} icon={<MoneyOffIcon />} color="warning" />
+          <StatCard title={t('totalExpenses')} value={formatCurrency(data?.total_expenses)} icon={<MoneyOffIcon />} color="warning" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-          <StatCard title="Total Loans Issued" value={formatCurrency(data?.total_loans)} icon={<AccountBalanceIcon />} color="secondary" />
+          <StatCard title={t('totalLoansIssued')} value={formatCurrency(data?.total_loans)} icon={<AccountBalanceIcon />} color="secondary" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-          <StatCard title="Outstanding Loans" value={formatCurrency(data?.outstanding_loans)} icon={<PaymentIcon />} color="error" />
+          <StatCard title={t('outstandingBalance')} value={formatCurrency(data?.outstanding_loans)} icon={<PaymentIcon />} color="error" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-          <StatCard title="Interest Earned" value={formatCurrency(data?.interest_earned)} icon={<AddCardIcon />} color="info" />
+          <StatCard title={t('interestEarned')} value={formatCurrency(data?.interest_earned)} icon={<AddCardIcon />} color="info" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }}>
-          <StatCard title={`Available ${settings?.community_name || 'Sangam'} Balance`} value={formatCurrency(data?.available_balance)} icon={<AccountBalanceIcon />} color="success" />
+          <StatCard title={`${t('availableBalance')} (${settings?.community_name || 'Sangam'})`} value={formatCurrency(data?.available_balance)} icon={<AccountBalanceIcon />} color="success" />
         </Grid>
       </Grid>
 
       {/* 5 Charts Section */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <CustomBarChart
             data={data?.charts?.monthly_collections || []}
-            title="Monthly Collections"
+            title={t('monthlyCollections')}
             xKey="month"
             yKey="amount"
             color="#11998e"
@@ -168,7 +157,7 @@ export default function Dashboard() {
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <CustomBarChart
             data={data?.charts?.monthly_expenses || []}
-            title="Monthly Expenses"
+            title={t('monthlyExpenses')}
             xKey="month"
             yKey="amount"
             color="#ed213a"
@@ -177,7 +166,7 @@ export default function Dashboard() {
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <CustomAreaChart
             data={data?.charts?.profit_loss || []}
-            title="Profit / Loss Trend"
+            title={t('profitLossTrend')}
             xKey="month"
             yKey="amount"
           />
@@ -185,7 +174,7 @@ export default function Dashboard() {
         <Grid size={{ xs: 12, md: 6 }}>
           <CustomPieChart
             data={data?.charts?.loan_status || []}
-            title="Loan Status Valuation"
+            title={t('loanStatusValuation')}
             nameKey="status"
             valueKey="amount"
           />
@@ -193,7 +182,7 @@ export default function Dashboard() {
         <Grid size={{ xs: 12, md: 6 }}>
           <CustomPieChart
             data={data?.charts?.expense_categories || []}
-            title="Expense Categories Allocation"
+            title={t('expenseCategoriesAllocation')}
             nameKey="category"
             valueKey="amount"
           />
@@ -202,21 +191,21 @@ export default function Dashboard() {
 
       {/* Recent Activity List */}
       {activities.length > 0 && (
-        <Paper sx={{ p: 3, mb: 4, borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', background: 'linear-gradient(135deg, #FFFFFF 0%, #FFFDF9 100%)', border: '1px solid #F0EBE2' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: '1rem' }}>
-            Recent Activity
+        <Paper sx={{ p: 2.5, mb: 3, borderRadius: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', border: '1px solid #EDEAE5' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 1.5, fontSize: '0.95rem' }}>
+            {t('recentActivity')}
           </Typography>
-          <Stack spacing={2}>
+          <Stack spacing={1.5}>
             {activities.map((act, i) => (
-              <Stack key={i} direction="row" spacing={2} alignItems="center">
-                <Box sx={{ p: 1, borderRadius: 2, bgcolor: 'action.hover', display: 'flex', alignItems: 'center' }}>
+              <Stack key={i} direction="row" spacing={1.5} alignItems="center" sx={{ py: 0.5 }}>
+                <Box sx={{ p: 0.75, borderRadius: 2, bgcolor: '#F5F3F0', display: 'flex', alignItems: 'center' }}>
                   {act.icon}
                 </Box>
                 <Box>
-                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>
                     {act.label}
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  <Typography variant="caption" color="text.secondary">
                     {act.format(act.data)}
                   </Typography>
                 </Box>
@@ -226,49 +215,35 @@ export default function Dashboard() {
         </Paper>
       )}
 
-      {/* Legacy Data Tables */}
-      <Grid container spacing={3}>
+      {/* Tables section */}
+      <Grid container spacing={2}>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <Paper sx={{ p: 0, overflow: 'hidden', borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #F0EBE2', background: 'linear-gradient(135deg, #FFFFFF 0%, #FFFDF9 100%)' }}>
-            <Box sx={{ px: 3, py: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
-                Recent Auctions
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Latest 5 auction records
-              </Typography>
-            </Box>
-            <Box sx={{ height: 320 }}>
+          <Paper sx={{ p: 2.5, borderRadius: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', border: '1px solid #EDEAE5' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: '0.95rem' }}>
+              {t('recentAuctions')}
+            </Typography>
+            <Box sx={{ height: 260 }}>
               <DataGrid
                 rows={data?.recent_auctions || []}
                 columns={auctionColumns}
-                pageSizeOptions={[5]}
-                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+                hideFooter
                 disableRowSelectionOnClick
-                disableColumnMenu
                 sx={{ border: 'none' }}
               />
             </Box>
           </Paper>
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <Paper sx={{ p: 0, overflow: 'hidden', borderRadius: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #F0EBE2', background: 'linear-gradient(135deg, #FFFFFF 0%, #FFFDF9 100%)' }}>
-            <Box sx={{ px: 3, py: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
-                Recent Transactions
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Latest 5 financial transactions
-              </Typography>
-            </Box>
-            <Box sx={{ height: 320 }}>
+          <Paper sx={{ p: 2.5, borderRadius: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', border: '1px solid #EDEAE5' }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, fontSize: '0.95rem' }}>
+              {t('recentTransactions')}
+            </Typography>
+            <Box sx={{ height: 260 }}>
               <DataGrid
                 rows={data?.recent_transactions || []}
                 columns={transactionColumns}
-                pageSizeOptions={[5]}
-                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+                hideFooter
                 disableRowSelectionOnClick
-                disableColumnMenu
                 sx={{ border: 'none' }}
               />
             </Box>

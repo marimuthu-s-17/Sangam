@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from '../context/LanguageContext';
 import {
   Box,
   TextField,
@@ -51,6 +52,7 @@ const CATEGORIES = [
 const PAYMENT_METHODS = ['Cash', 'UPI', 'Bank Transfer', 'Cheque', 'Card'];
 
 export default function Expenses() {
+  const { t } = useTranslation();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -211,40 +213,40 @@ export default function Expenses() {
   return (
     <Box sx={{ pb: 4 }}>
       <PageHeader
-        title="Expenses"
-        subtitle="Track all group expenses"
-        buttonText="Add Expense"
+        title={t('expensesTitle')}
+        subtitle={t('expensesSubtitle')}
+        buttonText={t('addExpense')}
         onButtonClick={openAdd}
       />
 
       {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 2.5 }}>
         {[
           {
-            title: 'Total Expenses',
+            title: t('totalExpenses'),
             value: stats.total_expenses,
-            icon: <ReceiptIcon fontSize="large" />,
+            icon: <ReceiptIcon />,
             color: 'linear-gradient(135deg, #2b5876 0%, #4e4376 100%)',
             isCurrency: true,
           },
           {
-            title: "Today's Expenses",
+            title: t('todayExpenses'),
             value: stats.today_expenses,
-            icon: <TodayIcon fontSize="large" />,
+            icon: <TodayIcon />,
             color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
             isCurrency: true,
           },
           {
-            title: 'This Month',
+            title: t('thisMonth'),
             value: stats.month_expenses,
-            icon: <CalendarMonthIcon fontSize="large" />,
+            icon: <CalendarMonthIcon />,
             color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)',
             isCurrency: true,
           },
           {
-            title: 'Highest Category',
+            title: t('highestCategory'),
             value: stats.highest_category,
-            icon: <CategoryIcon fontSize="large" />,
+            icon: <CategoryIcon />,
             color: 'linear-gradient(135deg, #ed213a 0%, #93291e 100%)',
             isCurrency: false,
           },
@@ -254,27 +256,27 @@ export default function Expenses() {
               sx={{
                 background: card.color,
                 color: 'white',
-                borderRadius: 3,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                borderRadius: 2.5,
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                 position: 'relative',
                 overflow: 'hidden',
               }}
             >
-              <CardContent sx={{ position: 'relative', zIndex: 2 }}>
+              <CardContent sx={{ position: 'relative', zIndex: 2, p: 2, '&:last-child': { pb: 2 } }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
-                    <Typography variant="subtitle2" sx={{ opacity: 0.8, fontWeight: 500 }}>
+                    <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       {card.title}
                     </Typography>
                     {statsLoading ? (
-                      <CircularProgress size={24} sx={{ color: 'white', mt: 1 }} />
+                      <CircularProgress size={20} sx={{ color: 'white', mt: 0.5 }} />
                     ) : (
-                      <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>
+                      <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5 }}>
                         {card.isCurrency ? formatCurrency(card.value) : card.value}
                       </Typography>
                     )}
                   </Box>
-                  <Box sx={{ opacity: 0.6 }}>{card.icon}</Box>
+                  <Box sx={{ opacity: 0.5 }}>{card.icon}</Box>
                 </Box>
               </CardContent>
             </Card>
@@ -283,7 +285,7 @@ export default function Expenses() {
       </Grid>
 
       {/* Filter Bar */}
-      <Card sx={{ p: 2.5, mb: 4, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      <Card sx={{ p: 2, mb: 2.5, borderRadius: 2.5, boxShadow: '0 1px 3px rgba(0,0,0,0.04)', border: '1px solid #EDEAE5' }}>
         <Grid container spacing={2} sx={{ alignItems: 'center' }}>
           <Grid size={{ xs: 12, sm: 4, md: 3 }}>
             <TextField
@@ -362,10 +364,10 @@ export default function Expenses() {
           <Typography color="text.secondary">No expenses found matching the filters.</Typography>
         </Paper>
       ) : (
-        <Stack spacing={1.5}>
+        <Stack spacing={0.75}>
           {/* Header Row */}
-          <Paper sx={{ p: 2, bgcolor: 'primary.dark', color: 'white', borderRadius: 2, display: { xs: 'none', md: 'block' } }}>
-            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
+          <Paper sx={{ px: 2, py: 1.25, bgcolor: '#F8F5F0', color: '#71717A', borderRadius: 2.5, display: { xs: 'none', md: 'block' }, border: '1px solid #EDEAE5' }}>
+            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               <Grid size={{ md: 0.8 }}>ID</Grid>
               <Grid size={{ md: 3.2 }}>Description</Grid>
               <Grid size={{ md: 2 }} sx={{ textAlign: 'right' }}>Amount</Grid>
@@ -410,46 +412,46 @@ export default function Expenses() {
                     <Grid size={{ xs: 6, md: 2 }}>{exp.payment_method || '—'}</Grid>
                   </Grid>
                 </AccordionSummary>
-                <AccordionDetails sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
-                  <Grid container spacing={3} sx={{ mb: 3 }}>
+                <AccordionDetails sx={{ px: 2.5, pb: 2, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#FAFAF8' }}>
+                  <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                      <Typography variant="caption" color="text.secondary" display="block">Remarks</Typography>
-                      <Typography variant="body2" sx={{ fontStyle: 'italic' }}>{exp.remarks || 'None'}</Typography>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Remarks</Typography>
+                      <Typography variant="body2" sx={{ fontStyle: 'italic', fontSize: '0.84rem' }}>{exp.remarks || 'None'}</Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                      <Typography variant="caption" color="text.secondary" display="block">Created</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatDate(exp.created_at)}</Typography>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Created</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{formatDate(exp.created_at)}</Typography>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                      <Typography variant="caption" color="text.secondary" display="block">Last Updated</Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatDate(exp.updated_at)}</Typography>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Last Updated</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.84rem' }}>{formatDate(exp.updated_at)}</Typography>
                     </Grid>
                   </Grid>
 
-                  <Divider sx={{ mb: 2.5 }} />
+                  <Divider sx={{ mb: 1.5 }} />
 
                   {/* Actions Panel */}
-                  <Stack direction="row" spacing={2} flexWrap="wrap" gap={1.5}>
+                  <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
                     <Button
                       variant="outlined"
                       color="primary"
-                      size="medium"
+                      size="small"
                       startIcon={<EditIcon />}
                       onClick={() => openEdit(exp)}
                     >
-                      Edit Expense
+                      Edit
                     </Button>
                     <Button
                       variant="outlined"
                       color="error"
-                      size="medium"
+                      size="small"
                       startIcon={<DeleteIcon />}
                       onClick={() => {
                         setDeletingId(exp.id);
                         setDeleteOpen(true);
                       }}
                     >
-                      Delete Expense
+                      Delete
                     </Button>
                   </Stack>
                 </AccordionDetails>

@@ -483,7 +483,7 @@ export default function Ledger() {
       </Box>
 
       {/* Overview Table */}
-      <Paper sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+      <Paper sx={{ borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
             <CircularProgress />
@@ -570,7 +570,7 @@ export default function Ledger() {
                   },
                 ].map((card, idx) => (
                   <Grid size={{ xs: 6, sm: 4, md: 2 }} key={idx}>
-                    <Card sx={{ bgcolor: card.bg, boxShadow: 'none', borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+                    <Card sx={{ bgcolor: card.bg, boxShadow: 'none', borderRadius: 2.5, border: '1px solid', borderColor: 'divider' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                           {card.icon}
@@ -635,9 +635,9 @@ export default function Ledger() {
                   </Typography>
                 </Box>
               ) : (
-                <TableContainer component={Paper} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+                <TableContainer component={Paper} sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                   <Table>
-                    <TableHead sx={{ bgcolor: 'action.hover' }}>
+                    <TableHead sx={{ bgcolor: '#FAFAF8' }}>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 700 }}>Month</TableCell>
                         <TableCell sx={{ fontWeight: 700 }}>Auction Group</TableCell>

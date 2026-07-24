@@ -623,7 +623,7 @@ export default function Auctions() {
   // Return full page detail view if an auction is selected
   if (viewingAuction) {
     return (
-      <Box sx={{ pb: 8 }}>
+      <Box sx={{ pb: 4 }}>
         <Button
           startIcon={<BackIcon />}
           onClick={() => setViewingAuction(null)}
@@ -635,15 +635,15 @@ export default function Auctions() {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 2 }}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <AuctionIcon color="primary" fontSize="large" />
+              <AuctionIcon color="primary" />
               {viewingAuction.name}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
               {viewingAuction.description || "No description provided."}
             </Typography>
           </Box>
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <StatusChip status={viewingAuction.status} size="medium" />
+          <Stack direction="row" spacing={0.75} alignItems="center">
+            <StatusChip status={viewingAuction.status} size="small" />
             <Button
               variant="outlined"
               startIcon={<EditIcon />}
@@ -664,21 +664,21 @@ export default function Auctions() {
         </Box>
 
         {/* Details stats cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid container spacing={2} sx={{ mb: 1.5 }}>
           {[
-            { title: 'Total Members', value: viewingAuction.members_count, icon: <PeopleIcon fontSize="large" />, color: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)' },
-            { title: 'Prize Amount', value: formatCurrency(viewingAuction.prize_amount), icon: <MoneyIcon fontSize="large" />, color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
-            { title: 'Current Month', value: `${viewingAuction.current_month} of ${viewingAuction.total_months}`, icon: <DateIcon fontSize="large" />, color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
-            { title: 'Status', value: viewingAuction.status.toUpperCase(), icon: <InfoIcon fontSize="large" />, color: 'linear-gradient(135deg, #7b4397 0%, #dc2430 100%)' },
+            { title: 'Total Members', value: viewingAuction.members_count, icon: <PeopleIcon />, color: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)' },
+            { title: 'Prize Amount', value: formatCurrency(viewingAuction.prize_amount), icon: <MoneyIcon />, color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+            { title: 'Current Month', value: `${viewingAuction.current_month} of ${viewingAuction.total_months}`, icon: <DateIcon />, color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
+            { title: 'Status', value: viewingAuction.status.toUpperCase(), icon: <InfoIcon />, color: 'linear-gradient(135deg, #7b4397 0%, #dc2430 100%)' },
           ].map((item, idx) => (
             <Grid key={idx} size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card sx={{ background: item.color, color: 'white', borderRadius: 3 }}>
-                <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Card sx={{ background: item.color, color: 'white', borderRadius: 2.5, boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
+                <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, '&:last-child': { pb: 2 } }}>
                   <Box>
-                    <Typography variant="subtitle2" sx={{ opacity: 0.8, fontWeight: 500 }}>{item.title}</Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700, mt: 1 }}>{item.value}</Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.title}</Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5 }}>{item.value}</Typography>
                   </Box>
-                  <Box sx={{ opacity: 0.7 }}>{item.icon}</Box>
+                  <Box sx={{ opacity: 0.6 }}>{item.icon}</Box>
                 </CardContent>
               </Card>
             </Grid>
@@ -686,7 +686,7 @@ export default function Auctions() {
         </Grid>
 
         {/* Tab interface for details sections */}
-        <Paper sx={{ borderRadius: 3, overflow: 'hidden', mb: 3 }}>
+        <Paper sx={{ borderRadius: 2.5, overflow: 'hidden', mb: 3 }}>
           <Tabs
             value={detailTab}
             onChange={(e, val) => setDetailTab(val)}
@@ -708,7 +708,7 @@ export default function Auctions() {
                     <Grid key={m.member_id} size={{ xs: 12, sm: 6, md: 4 }}>
                       <Card sx={{
                         p: 2,
-                        borderRadius: 3,
+                        borderRadius: 2.5,
                         boxShadow: 'none',
                         border: '1px solid',
                         borderColor: 'divider',
@@ -755,7 +755,7 @@ export default function Auctions() {
             {detailTab === 1 && (
               <Box>
                 {viewingAuction.status !== 'active' ? (
-                  <Box sx={{ p: 4, bgcolor: 'action.hover', borderRadius: 3, border: '1px dashed', borderColor: 'divider', textAlign: 'center' }}>
+                  <Box sx={{ p: 4, bgcolor: '#FAFAF8', borderRadius: 2.5, border: '1px dashed', borderColor: 'divider', textAlign: 'center' }}>
                     <UpcomingIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>Bidding Round Not Available</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mt: 1 }}>
@@ -802,7 +802,7 @@ export default function Auctions() {
 
                     {/* Bidding Control Panel */}
                     <Grid size={{ xs: 12, md: 4 }}>
-                      <Card sx={{ borderRadius: 3, height: '100%', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+                      <Card sx={{ borderRadius: 2.5, height: '100%', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                         <CardContent>
                           <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                             Month {currentMonthDetails.stats.current_month} Controls
@@ -984,7 +984,7 @@ export default function Auctions() {
 
                     {/* Member Contributions & Eligibility Table */}
                     <Grid size={{ xs: 12, md: 8 }}>
-                      <Paper sx={{ height: 400, borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+                      <Paper sx={{ height: 400, borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                         <DataGrid
                           rows={currentMonthDetails.auction_month.contributions.map((c, idx) => ({ ...c, s_no: idx + 1 }))}
                           columns={[
@@ -1079,7 +1079,7 @@ export default function Auctions() {
                     <CircularProgress />
                   </Box>
                 ) : historyDetails.length === 0 ? (
-                  <Box sx={{ p: 4, bgcolor: 'action.hover', borderRadius: 3, border: '1px dashed', borderColor: 'divider', textAlign: 'center' }}>
+                  <Box sx={{ p: 4, bgcolor: '#FAFAF8', borderRadius: 2.5, border: '1px dashed', borderColor: 'divider', textAlign: 'center' }}>
                     <DurationIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>No Completed Rounds Yet</Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mt: 1 }}>
@@ -1103,7 +1103,7 @@ export default function Auctions() {
                           boxShadow: '0 0 0 2px #4caf50'
                         }} />
                         
-                        <Card sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' } }}>
+                        <Card sx={{ borderRadius: 2.5, border: '1px solid', borderColor: 'divider', boxShadow: 'none', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' } }}>
                           <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                             <Box>
                               <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
@@ -1225,7 +1225,7 @@ export default function Auctions() {
             <Divider />
             <DialogContent sx={{ p: 3 }}>
               {/* Official Summary Key-Value Cards */}
-              <Paper variant="outlined" sx={{ p: 3, mb: 3, borderRadius: 3, bgcolor: '#fbfbfb', border: '1px solid', borderColor: 'divider' }}>
+              <Paper variant="outlined" sx={{ p: 3, mb: 3, borderRadius: 2.5, bgcolor: '#fbfbfb', border: '1px solid', borderColor: 'divider' }}>
                 <Grid container spacing={2.5}>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Auction Name</Typography>
@@ -1316,7 +1316,7 @@ export default function Auctions() {
                     {selectedHistoryMonth.contributions
                       .filter(c => !c.paid_status && c.member_id !== selectedHistoryMonth.winning_member_id)
                       .map(c => (
-                        <Paper key={c.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'action.hover' }}>
+                        <Paper key={c.id} sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: '#FAFAF8' }}>
                           <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>{c.name}</Typography>
                         </Paper>
                       ))}
@@ -1359,7 +1359,7 @@ export default function Auctions() {
   }
 
   return (
-    <Box sx={{ position: 'relative', pb: 8 }}>
+    <Box sx={{ position: 'relative', pb: 4 }}>
       <PageHeader
         title="Auction Groups"
         subtitle="Configure, audit, and run chit-fund style auctions"
@@ -1368,35 +1368,45 @@ export default function Auctions() {
       />
 
       {/* Stats Cards Section */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 1.5 }}>
         {[
-          { title: 'Total Auctions', value: stats.total_auctions, icon: <AuctionIcon fontSize="large" />, color: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)' },
-          { title: 'Upcoming Auctions', value: stats.upcoming_auctions, icon: <UpcomingIcon fontSize="large" />, color: 'linear-gradient(135deg, #7b4397 0%, #dc2430 100%)' },
-          { title: 'Active Auctions', value: stats.active_auctions, icon: <ActiveIcon fontSize="large" />, color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
-          { title: 'Completed Auctions', value: stats.completed_auctions, icon: <CompleteIcon fontSize="large" />, color: 'linear-gradient(135deg, #4f3b78 0%, #0d0c1d 100%)' },
-          { title: 'Total Members Participating', value: stats.total_members_participating, icon: <PeopleIcon fontSize="large" />, color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
+          { title: 'Total Auctions', value: stats.total_auctions, icon: <AuctionIcon />, color: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)' },
+          { title: 'Upcoming Auctions', value: stats.upcoming_auctions, icon: <UpcomingIcon />, color: 'linear-gradient(135deg, #7b4397 0%, #dc2430 100%)' },
+          { title: 'Active Auctions', value: stats.active_auctions, icon: <ActiveIcon />, color: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)' },
+          { title: 'Completed Auctions', value: stats.completed_auctions, icon: <CompleteIcon />, color: 'linear-gradient(135deg, #4f3b78 0%, #0d0c1d 100%)' },
+          { title: 'Total Members Participating', value: stats.total_members_participating, icon: <PeopleIcon />, color: 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)' },
         ].map((item, idx) => (
           <Grid key={idx} size={{ xs: 12, sm: 6, md: 2.4 }}>
             <Card sx={{
               background: item.color,
               color: 'white',
-              borderRadius: 3,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+              borderRadius: 2.5,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
               position: 'relative',
               overflow: 'hidden',
             }}>
-              <CardContent sx={{ position: 'relative', zIndex: 2 }}>
+              <CardContent sx={{ position: 'relative', zIndex: 2, p: 2, '&:last-child': { pb: 2 } }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
-                    <Typography variant="subtitle2" sx={{ opacity: 0.8, fontWeight: 500 }}>{item.title}</Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{item.title}</Typography>
                     {statsLoading ? (
-                      <Skeleton width={80} height={40} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
+                      <Skeleton width={60} height={32} sx={{ bgcolor: 'rgba(255,255,255,0.2)' }} />
                     ) : (
-                      <Typography variant="h4" sx={{ fontWeight: 700, mt: 1 }}>{item.value}</Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 800, mt: 0.5 }}>{item.value}</Typography>
                     )}
                   </Box>
                 </Box>
               </CardContent>
+              <Box sx={{
+                position: 'absolute',
+                top: -20,
+                right: -20,
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.08)',
+                zIndex: 1,
+              }} />
             </Card>
           </Grid>
         ))}
@@ -1436,14 +1446,14 @@ export default function Auctions() {
           <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
         </Box>
       ) : rows.length === 0 ? (
-        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 3, border: '1px dashed', borderColor: 'divider' }}>
+        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: 2.5, border: '1px dashed', borderColor: 'divider' }}>
           <Typography color="text.secondary">No auctions found matching the filters.</Typography>
         </Paper>
       ) : (
         <Box>
           {/* Header Row */}
-          <Paper sx={{ p: 2, bgcolor: 'primary.dark', color: 'white', borderRadius: 2, display: { xs: 'none', md: 'block' }, mb: 1 }}>
-            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
+          <Paper sx={{ p: 2, bgcolor: '#F8F5F0', color: '#71717A', borderRadius: 2, display: { xs: 'none', md: 'block' }, mb: 1 }}>
+            <Grid container spacing={2} sx={{ fontWeight: 700, fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               <Grid size={{ md: 0.8 }}>ID</Grid>
               <Grid size={{ md: 3 }}>Auction Name</Grid>
               <Grid size={{ md: 1.2 }} sx={{ textAlign: 'center' }}>Members</Grid>
@@ -1454,7 +1464,7 @@ export default function Auctions() {
             </Grid>
           </Paper>
 
-          <Stack spacing={1.5}>
+          <Stack spacing={0.75}>
             {rows.map((auction) => {
               const isExpanded = expandedAuctionId === auction.id;
               return (
@@ -1495,8 +1505,8 @@ export default function Auctions() {
                       </Grid>
                     </Grid>
                   </AccordionSummary>
-                  <AccordionDetails sx={{ px: 3, pb: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
-                    <Grid container spacing={3} sx={{ mb: 3 }}>
+                  <AccordionDetails sx={{ px: 2.5, pb: 2, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#FAFAF8' }}>
+                    <Grid container spacing={2} sx={{ mb: 2 }}>
                       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                         <Typography variant="caption" color="text.secondary" display="block">Monthly Contribution</Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatCurrency(auction.monthly_contribution)}</Typography>
@@ -1515,14 +1525,14 @@ export default function Auctions() {
                       </Grid>
                     </Grid>
 
-                    <Divider sx={{ mb: 2.5 }} />
+                    <Divider sx={{ mb: 1.5 }} />
 
                     {/* Actions Panel */}
                     <Stack direction="row" spacing={2} flexWrap="wrap" gap={1.5}>
                       <Button
                         variant="contained"
                         color="primary"
-                        size="medium"
+                        size="small"
                         startIcon={<AuctionIcon />}
                         onClick={() => setViewingAuction(auction)}
                       >
@@ -1531,7 +1541,7 @@ export default function Auctions() {
                       <Button
                         variant="outlined"
                         color="primary"
-                        size="medium"
+                        size="small"
                         startIcon={<EditIcon />}
                         onClick={(e) => openEdit(auction, e)}
                       >
@@ -1540,7 +1550,7 @@ export default function Auctions() {
                       <Button
                         variant="outlined"
                         color="error"
-                        size="medium"
+                        size="small"
                         startIcon={<DeleteIcon />}
                         onClick={(e) => openDelete(auction, e)}
                         disabled={auction.status === 'cancelled'}

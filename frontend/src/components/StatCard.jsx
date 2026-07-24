@@ -1,53 +1,57 @@
-import { Card, CardContent, Box, Typography } from '@mui/material';
+import { Card, CardContent, Box, Typography, useTheme } from '@mui/material';
 import { TrendingUp as TrendingUpIcon } from '@mui/icons-material';
 
-const gradients = {
-  primary: 'linear-gradient(135deg, #1A1A1A 0%, #3E3E3E 100%)',
-  secondary: 'linear-gradient(135deg, #F4A623 0%, #F7C965 100%)',
-  success: 'linear-gradient(135deg, #2ECC71 0%, #6DDE9F 100%)',
-  info: 'linear-gradient(135deg, #4A90D9 0%, #7EB7F0 100%)',
-  warning: 'linear-gradient(135deg, #E74C3C 0%, #F08B81 100%)',
-  error: 'linear-gradient(135deg, #E74C3C 0%, #F08B81 100%)',
-};
-
 export default function StatCard({ title, value, icon, color = 'primary', subtitle }) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
+  const gradients = {
+    primary: isDark ? 'linear-gradient(135deg, #F4A623 0%, #F7C965 100%)' : 'linear-gradient(135deg, #1A1A1A 0%, #3E3E3E 100%)',
+    secondary: 'linear-gradient(135deg, #F4A623 0%, #F7C965 100%)',
+    success: 'linear-gradient(135deg, #2ECC71 0%, #6DDE9F 100%)',
+    info: 'linear-gradient(135deg, #4A90D9 0%, #7EB7F0 100%)',
+    warning: 'linear-gradient(135deg, #E74C3C 0%, #F08B81 100%)',
+    error: 'linear-gradient(135deg, #E74C3C 0%, #F08B81 100%)',
+  };
+
   return (
     <Card
       sx={{
         position: 'relative',
         overflow: 'hidden',
         cursor: 'default',
-        background: 'linear-gradient(135deg, #FFFFFF 0%, #FFF9F0 100%)',
+        bgcolor: 'background.paper',
         '&::before': {
           content: '""',
           position: 'absolute',
           top: 0,
           left: 0,
           width: '100%',
-          height: 4,
+          height: 3,
           background: gradients[color] || gradients.primary,
         },
       }}
     >
-      <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
+      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
         <Box
           sx={{
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'space-between',
-            gap: 2,
+            gap: 1.5,
           }}
         >
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
               variant="body2"
               sx={{
                 color: 'text.secondary',
-                fontWeight: 700,
-                fontSize: '0.74rem',
+                fontWeight: 600,
+                fontSize: '0.7rem',
                 textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                mb: 1,
+                letterSpacing: '0.06em',
+                mb: 0.5,
+                lineHeight: 1.3,
               }}
             >
               {title}
@@ -57,19 +61,19 @@ export default function StatCard({ title, value, icon, color = 'primary', subtit
               sx={{
                 fontWeight: 800,
                 color: 'text.primary',
-                fontSize: { xs: '1.65rem', sm: '1.95rem' },
-                lineHeight: 1.1,
-                mb: 0.5,
+                fontSize: { xs: '1.35rem', sm: '1.55rem' },
+                lineHeight: 1.15,
+                mb: 0,
               }}
             >
               {value}
             </Typography>
             {subtitle && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
-                <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.75 }}>
+                <TrendingUpIcon sx={{ fontSize: 14, color: 'success.main' }} />
                 <Typography
                   variant="caption"
-                  sx={{ color: 'text.secondary', fontSize: '0.75rem' }}
+                  sx={{ color: 'text.secondary', fontSize: '0.7rem' }}
                 >
                   {subtitle}
                 </Typography>
@@ -78,17 +82,18 @@ export default function StatCard({ title, value, icon, color = 'primary', subtit
           </Box>
           <Box
             sx={{
-              width: 52,
-              height: 52,
-              borderRadius: '16px',
+              width: 44,
+              height: 44,
+              borderRadius: '12px',
               background: gradients[color] || gradients.primary,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 18px rgba(0, 0, 0, 0.12)',
+              flexShrink: 0,
+              boxShadow: isDark ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.1)',
               '& svg': {
-                color: '#fff',
-                fontSize: 24,
+                color: isDark && color === 'primary' ? '#1A1A1A' : '#ffffff',
+                fontSize: 20,
               },
             }}
           >

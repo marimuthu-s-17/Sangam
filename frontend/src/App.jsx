@@ -4,7 +4,6 @@ import Dashboard from './pages/Dashboard';
 import Members from './pages/Members';
 import Auctions from './pages/Auctions';
 import Expenses from './pages/Expenses';
-import Loans from './pages/Loans';
 import Finance from './pages/Finance';
 import Ledger from './pages/Ledger';
 import Reports from './pages/Reports';
@@ -21,7 +20,7 @@ function App() {
           <Route path="members" element={<Members />} />
           <Route path="auctions" element={<Auctions />} />
           <Route path="expenses" element={<Expenses />} />
-          <Route path="loans" element={<Loans />} />
+          <Route path="loans" element={<Navigate to="/finance" replace />} />
           <Route path="finance" element={<Finance />} />
           <Route path="ledger" element={<Ledger />} />
           <Route path="reports" element={<Reports />} />

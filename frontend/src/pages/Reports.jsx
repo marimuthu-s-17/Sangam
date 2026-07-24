@@ -231,7 +231,7 @@ export default function Reports() {
       />
 
       {/* Control Panel */}
-      <Card sx={{ p: 3, mb: 4, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+      <Card sx={{ p: 3, mb: 4, borderRadius: 2.5, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
         <Grid container spacing={3} sx={{ alignItems: 'center' }}>
           <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <TextField
@@ -332,7 +332,7 @@ export default function Reports() {
           <CircularProgress />
         </Box>
       ) : previewData.length > 0 ? (
-        <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+        <Card sx={{ borderRadius: 2.5, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
           <Box
             sx={{
               px: 3,
@@ -355,7 +355,7 @@ export default function Reports() {
               </Typography>
             </Box>
 
-            <Stack direction="row" spacing={1.5}>
+            <Stack direction="row" spacing={0.75}>
               <Button
                 variant="outlined"
                 color="error"
@@ -402,7 +402,7 @@ export default function Reports() {
             p: 8,
             border: '2px dashed',
             borderColor: 'divider',
-            borderRadius: 3,
+            borderRadius: 2.5,
             bgcolor: 'background.paper',
           }}
         >

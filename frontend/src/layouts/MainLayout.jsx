@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
+import { useTranslation } from '../context/LanguageContext';
 import dashboardService from '../services/dashboardService';
 import ErrorBoundary from '../components/ErrorBoundary';
 import {
@@ -44,25 +45,16 @@ import {
   LocalAtm as LocalAtmIcon,
   Settings as SettingsIcon,
   Search as SearchIcon,
+  Language as LanguageIcon,
 } from '@mui/icons-material';
 
-const DRAWER_WIDTH = 284;
-
-const navItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Members', icon: <PeopleIcon />, path: '/members' },
-  { text: 'Auctions', icon: <GavelIcon />, path: '/auctions' },
-  { text: 'Expenses', icon: <ReceiptIcon />, path: '/expenses' },
-  { text: 'Loans', icon: <LocalAtmIcon />, path: '/loans' },
-  { text: 'Finance', icon: <AccountBalanceIcon />, path: '/finance' },
-  { text: 'Member Ledger', icon: <MenuBookIcon />, path: '/ledger' },
-  { text: 'Reports', icon: <AssessmentIcon />, path: '/reports' },
-  { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
-];
+const DRAWER_WIDTH = 256;
 
 export default function MainLayout() {
   const { settings } = useSettings();
   const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const { t, language, setLanguage } = useTranslation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
@@ -73,6 +65,17 @@ export default function MainLayout() {
   const [searchResults, setSearchResults] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+
+  const navItems = [
+    { text: t('dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
+    { text: t('members'), icon: <PeopleIcon />, path: '/members' },
+    { text: t('auctions'), icon: <GavelIcon />, path: '/auctions' },
+    { text: t('expenses'), icon: <ReceiptIcon />, path: '/expenses' },
+    { text: t('finance'), icon: <AccountBalanceIcon />, path: '/finance' },
+    { text: t('ledger'), icon: <MenuBookIcon />, path: '/ledger' },
+    { text: t('reports'), icon: <AssessmentIcon />, path: '/reports' },
+    { text: t('settings'), icon: <SettingsIcon />, path: '/settings' },
+  ];
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -97,48 +100,58 @@ export default function MainLayout() {
     if (isMobile) setMobileOpen(false);
   };
 
+  const toggleLanguage = () => {
+    setLanguage(language === 'en' ? 'ta' : 'en');
+  };
+
   const drawerContent = (
     <Box
       sx={{
         height: '100%',
-        background: 'linear-gradient(180deg, #FFFDF9 0%, #F8F2EA 100%)',
+        background: isDark ? theme.palette.background.paper : '#FAFAF8',
         display: 'flex',
         flexDirection: 'column',
-        borderRight: '1px solid #F0EBE2',
+        borderRight: '1px solid',
+        borderColor: theme.palette.divider,
       }}
     >
       {/* Logo Area */}
       <Box
         sx={{
-          p: 3,
+          px: 2.5,
+          py: 2,
           display: 'flex',
           alignItems: 'center',
-          gap: 2,
+          gap: 1.5,
         }}
       >
         <Box
           sx={{
-            width: 42,
-            height: 42,
-            borderRadius: '12px',
+            width: 36,
+            height: 36,
+            borderRadius: '10px',
             background: 'linear-gradient(135deg, #F4A623 0%, #F7C965 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 10px 24px rgba(244, 166, 35, 0.22)',
+            boxShadow: '0 4px 12px rgba(244, 166, 35, 0.2)',
+            flexShrink: 0,
           }}
         >
-          <GavelIcon sx={{ color: '#fff', fontSize: 22 }} />
+          <GavelIcon sx={{ color: '#fff', fontSize: 18 }} />
         </Box>
-        <Box>
+        <Box sx={{ minWidth: 0 }}>
           <Typography
             variant="h6"
             sx={{
-              color: '#1A1A1A',
+              color: theme.palette.text.primary,
               fontWeight: 800,
-              fontSize: '1.12rem',
+              fontSize: '1rem',
               letterSpacing: '-0.02em',
               lineHeight: 1.2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
             {settings?.community_name || 'Sangam'}
@@ -146,9 +159,9 @@ export default function MainLayout() {
           <Typography
             variant="caption"
             sx={{
-              color: '#8A8A8A',
-              fontSize: '0.65rem',
-              letterSpacing: '0.1em',
+              color: theme.palette.text.secondary,
+              fontSize: '0.6rem',
+              letterSpacing: '0.08em',
               textTransform: 'uppercase',
             }}
           >
@@ -158,35 +171,36 @@ export default function MainLayout() {
         {isMobile && (
           <IconButton
             onClick={handleDrawerToggle}
-            sx={{ color: '#8A8A8A', ml: 'auto' }}
+            sx={{ color: theme.palette.text.secondary, ml: 'auto' }}
+            size="small"
           >
-            <ChevronLeftIcon />
+            <ChevronLeftIcon fontSize="small" />
           </IconButton>
         )}
       </Box>
 
-      <Divider sx={{ borderColor: '#EFE9DE', mx: 2 }} />
+      <Divider sx={{ borderColor: theme.palette.divider, mx: 2 }} />
 
       {/* Navigation */}
-      <List sx={{ px: 1.5, pt: 2, flex: 1 }}>
+      <List sx={{ px: 1.5, pt: 1.5, flex: 1 }}>
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <ListItem key={item.text} disablePadding sx={{ mb: 0.5 }}>
+            <ListItem key={item.text} disablePadding sx={{ mb: 0.25 }}>
               <ListItemButton
                 onClick={() => handleNavClick(item.path)}
                 sx={{
-                  borderRadius: '16px',
-                  py: 1.3,
-                  px: 1.8,
-                  transition: 'all 0.2s ease',
+                  borderRadius: '10px',
+                  py: 0.9,
+                  px: 1.5,
+                  transition: 'all 0.15s ease',
                   backgroundColor: isActive
-                    ? '#FFF6E8'
+                    ? (isDark ? 'action.selected' : '#FFF6E8')
                     : 'transparent',
                   '&:hover': {
                     backgroundColor: isActive
-                      ? '#FFF6E8'
-                      : '#FCFBF9',
+                      ? (isDark ? 'action.selected' : '#FFF6E8')
+                      : (isDark ? 'action.hover' : '#F3F0EB'),
                   },
                   ...(isActive && {
                     '&::before': {
@@ -195,19 +209,20 @@ export default function MainLayout() {
                       left: 0,
                       top: '50%',
                       transform: 'translateY(-50%)',
-                      width: 4,
-                      height: 24,
-                      borderRadius: '0 4px 4px 0',
-                      background: 'linear-gradient(180deg, #F4A623, #F7C965)',
+                      width: 3,
+                      height: 20,
+                      borderRadius: '0 3px 3px 0',
+                      background: '#F4A623',
                     },
                   }),
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: isActive ? '#F4A623' : '#8A8A8A',
-                    minWidth: 40,
-                    transition: 'color 0.2s ease',
+                    color: isActive ? '#F4A623' : theme.palette.text.secondary,
+                    minWidth: 36,
+                    transition: 'color 0.15s ease',
+                    '& svg': { fontSize: 20 },
                   }}
                 >
                   {item.icon}
@@ -216,24 +231,13 @@ export default function MainLayout() {
                   primary={item.text}
                   primaryTypographyProps={{
                     sx: {
-                      fontSize: '0.875rem',
+                      fontSize: '0.84rem',
                       fontWeight: isActive ? 700 : 500,
-                      color: isActive ? '#1A1A1A' : '#6B6B6B',
+                      color: isActive ? theme.palette.text.primary : theme.palette.text.secondary,
                       letterSpacing: '0.01em',
                     }
                   }}
                 />
-                {isActive && (
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #F4A623, #F7C965)',
-                      boxShadow: '0 0 8px rgba(244, 166, 35, 0.3)',
-                    }}
-                  />
-                )}
               </ListItemButton>
             </ListItem>
           );
@@ -241,40 +245,40 @@ export default function MainLayout() {
       </List>
 
       {/* Footer */}
-      <Box sx={{ p: 2 }}>
-        <Divider sx={{ borderColor: '#EFE9DE', mb: 2 }} />
+      <Box sx={{ p: 2, pt: 0 }}>
+        <Divider sx={{ borderColor: theme.palette.divider, mb: 1.5 }} />
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             gap: 1.5,
-            px: 1,
+            px: 0.5,
           }}
         >
           <Avatar
             sx={{
-              width: 36,
-              height: 36,
-              bgcolor: '#FFF6E8',
+              width: 32,
+              height: 32,
+              bgcolor: isDark ? '#27272A' : '#FFF6E8',
               color: '#F4A623',
-              fontSize: '0.85rem',
+              fontSize: '0.78rem',
               fontWeight: 700,
             }}
           >
-            A
+            {t('admin')[0]}
           </Avatar>
           <Box>
             <Typography
               variant="body2"
-              sx={{ color: '#fff', fontWeight: 600, fontSize: '0.8rem' }}
+              sx={{ color: theme.palette.text.primary, fontWeight: 600, fontSize: '0.78rem', lineHeight: 1.3 }}
             >
-              Admin
+              {t('admin')}
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: '#8A8A8A', fontSize: '0.72rem' }}
+              sx={{ color: theme.palette.text.secondary, fontSize: '0.65rem' }}
             >
-              Administrator
+              {t('administrator')}
             </Typography>
           </Box>
         </Box>
@@ -283,7 +287,7 @@ export default function MainLayout() {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
       {/* App Bar */}
       <AppBar
         position="fixed"
@@ -291,11 +295,9 @@ export default function MainLayout() {
         sx={{
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           ml: { md: `${DRAWER_WIDTH}px` },
-          backdropFilter: 'blur(20px)',
-          background: 'transparent',
         }}
       >
-        <Toolbar sx={{ py: 0.5 }}>
+        <Toolbar sx={{ py: 0.5, minHeight: '52px !important' }}>
           <IconButton
             color="inherit"
             edge="start"
@@ -311,9 +313,10 @@ export default function MainLayout() {
               noWrap
               sx={{
                 fontWeight: 700,
-                fontSize: '1.06rem',
+                fontSize: '0.95rem',
                 letterSpacing: '-0.01em',
                 mr: 3,
+                color: theme.palette.text.primary,
                 display: { xs: 'none', sm: 'block' }
               }}
             >
@@ -324,24 +327,30 @@ export default function MainLayout() {
             <Box
               sx={{
                 position: 'relative',
-                borderRadius: '999px',
-                backgroundColor: '#F8F2EA',
-                border: '1px solid #EFE9DE',
+                borderRadius: '10px',
+                backgroundColor: isDark ? '#0D1117' : '#F3F0EB',
+                border: '1px solid',
+                borderColor: theme.palette.divider,
                 '&:hover': {
-                  backgroundColor: '#F3EBDD',
+                  backgroundColor: isDark ? 'action.hover' : '#EDE9E3',
                 },
+                '&:focus-within': {
+                  borderColor: '#F4A623',
+                  backgroundColor: isDark ? '#161B22' : '#FFFFFF',
+                },
+                transition: 'all 0.2s ease',
                 marginRight: 2,
                 marginLeft: 0,
-                width: { xs: '100%', sm: '300px' },
+                width: { xs: '100%', sm: '260px' },
                 display: 'flex',
                 alignItems: 'center',
               }}
             >
-              <Box sx={{ p: '0px 10px', display: 'flex', alignItems: 'center' }}>
-                <SearchIcon sx={{ color: '#8A8A8A', fontSize: 18 }} />
+              <Box sx={{ px: 1.25, display: 'flex', alignItems: 'center' }}>
+                <SearchIcon sx={{ color: theme.palette.text.secondary, fontSize: 16 }} />
               </Box>
               <InputBase
-                placeholder="Global Search..."
+                placeholder={t('search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -350,10 +359,10 @@ export default function MainLayout() {
                   }
                 }}
                 sx={{
-                  color: '#1A1A1A',
+                  color: theme.palette.text.primary,
                   width: '100%',
                   '& .MuiInputBase-input': {
-                    padding: '6px 6px 6px 0px',
+                    padding: '6px 8px 6px 0px',
                     fontSize: '0.8rem',
                   },
                 }}
@@ -361,27 +370,38 @@ export default function MainLayout() {
             </Box>
           </Box>
 
-          <Tooltip title="Notifications">
-            <IconButton color="inherit" sx={{ mr: 1 }}>
-              <Badge badgeContent={3} color="secondary">
-                <NotificationsIcon />
+          {/* Language Switch Toggle Button */}
+          <Tooltip title={language === 'en' ? 'மாற்றவும்: தமிழ்' : 'Switch to: English'}>
+            <IconButton onClick={toggleLanguage} color="inherit" size="small" sx={{ mr: 2, border: '1px solid', borderColor: theme.palette.divider, borderRadius: 2, px: 1.5, py: 0.5 }}>
+              <LanguageIcon sx={{ fontSize: 16, mr: 0.5 }} />
+              <Typography variant="button" sx={{ fontSize: '0.75rem', fontWeight: 700 }}>
+                {language === 'en' ? 'TA' : 'EN'}
+              </Typography>
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title={t('notifications')}>
+            <IconButton color="inherit" size="small" sx={{ mr: 1, color: theme.palette.text.primary }}>
+              <Badge badgeContent={3} color="secondary" sx={{ '& .MuiBadge-badge': { fontSize: '0.65rem', height: 16, minWidth: 16 } }}>
+                <NotificationsIcon sx={{ fontSize: 20 }} />
               </Badge>
             </IconButton>
           </Tooltip>
 
           <Avatar
             sx={{
-              width: 36,
-              height: 36,
-              bgcolor: '#FFF6E8',
-              color: '#1A1A1A',
-              fontSize: '0.85rem',
+              width: 32,
+              height: 32,
+              bgcolor: isDark ? '#27272A' : '#FFF6E8',
+              color: theme.palette.text.primary,
+              fontSize: '0.78rem',
               fontWeight: 700,
               cursor: 'pointer',
-              border: '2px solid #F0EBE2',
+              border: '2px solid',
+              borderColor: theme.palette.divider,
             }}
           >
-            A
+            {t('admin')[0]}
           </Avatar>
         </Toolbar>
       </AppBar>
@@ -428,14 +448,15 @@ export default function MainLayout() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, sm: 3 },
+          px: { xs: 2, sm: 2.5 },
+          py: { xs: 1.5, sm: 2 },
           width: { md: `calc(100% - ${DRAWER_WIDTH}px)` },
           minHeight: '100vh',
           background: 'transparent',
           position: 'relative',
         }}
       >
-        <Toolbar />
+        <Toolbar sx={{ minHeight: '52px !important' }} />
         <Box className="page-content">
           <ErrorBoundary>
             <Outlet />
@@ -453,17 +474,17 @@ export default function MainLayout() {
         }}
         fullWidth
         maxWidth="md"
-        PaperProps={{
-          sx: { borderRadius: 3, p: 1 }
+        slotProps={{
+          paper: { sx: { borderRadius: 3 } }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 800, pb: 1 }}>
-          Global Search Results for "{searchQuery}"
+        <DialogTitle sx={{ fontWeight: 700, pb: 1, fontSize: '1rem' }}>
+          Search Results for "{searchQuery}"
         </DialogTitle>
         <DialogContent dividers>
           {searchLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 5 }}>
-              <CircularProgress />
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress size={32} />
             </Box>
           ) : !searchResults || (
             !searchResults.members?.length &&
@@ -471,17 +492,17 @@ export default function MainLayout() {
             !searchResults.expenses?.length &&
             !searchResults.loans?.length
           ) ? (
-            <Box sx={{ py: 4 }}>
-              <Typography variant="body1" color="text.secondary" align="center">
+            <Box sx={{ py: 3 }}>
+              <Typography variant="body2" color="text.secondary" align="center">
                 No matching results found across Members, Auctions, Expenses, or Loans.
               </Typography>
             </Box>
           ) : (
-            <Stack spacing={4}>
+            <Stack spacing={3}>
               {/* Members */}
               {searchResults.members && searchResults.members.length > 0 && (
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
                     Members ({searchResults.members.length})
                   </Typography>
                   <List dense>
@@ -498,7 +519,7 @@ export default function MainLayout() {
               {/* Auctions */}
               {searchResults.auctions && searchResults.auctions.length > 0 && (
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
                     Auctions ({searchResults.auctions.length})
                   </Typography>
                   <List dense>
@@ -515,7 +536,7 @@ export default function MainLayout() {
               {/* Expenses */}
               {searchResults.expenses && searchResults.expenses.length > 0 && (
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
                     Expenses ({searchResults.expenses.length})
                   </Typography>
                   <List dense>
@@ -532,12 +553,12 @@ export default function MainLayout() {
               {/* Loans */}
               {searchResults.loans && searchResults.loans.length > 0 && (
                 <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1, color: '#1a237e' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>
                     Loans ({searchResults.loans.length})
                   </Typography>
                   <List dense>
                     {searchResults.loans.map((l) => (
-                      <ListItem key={l.id} button onClick={() => { setSearchOpen(false); setSearchQuery(''); navigate('/loans'); }}>
+                      <ListItem key={l.id} button onClick={() => { setSearchOpen(false); setSearchQuery(''); navigate('/finance'); }}>
                         <ListItemIcon><LocalAtmIcon color="primary" /></ListItemIcon>
                         <ListItemText primary={l.title} secondary={l.subtitle} />
                       </ListItem>
@@ -549,8 +570,8 @@ export default function MainLayout() {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} color="primary">
-            Close
+          <Button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} color="primary" size="small">
+            {t('close')}
           </Button>
         </DialogActions>
       </Dialog>

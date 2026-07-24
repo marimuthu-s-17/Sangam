@@ -7,6 +7,7 @@ import {
   Button,
   Typography,
   Box,
+  useTheme,
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
 
@@ -19,6 +20,9 @@ export default function ConfirmDialog({
   confirmText = 'Delete',
   cancelText = 'Cancel',
 }) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
   return (
     <Dialog
       open={open}
@@ -26,40 +30,41 @@ export default function ConfirmDialog({
       maxWidth="xs"
       fullWidth
       slotProps={{
-        paper: { sx: { p: 1 } },
+        paper: { sx: { borderRadius: 3 } },
       }}
     >
-      <DialogTitle component="div" sx={{ pb: 1 }}>
+      <DialogTitle component="div" sx={{ pb: 0.5, pt: 2, px: 2.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box
             sx={{
-              width: 40,
-              height: 40,
+              width: 36,
+              height: 36,
               borderRadius: '10px',
-              bgcolor: 'error.light',
+              bgcolor: isDark ? 'rgba(239, 68, 68, 0.15)' : '#FEE2E2',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <WarningIcon sx={{ color: '#fff', fontSize: 20 }} />
+            <WarningIcon sx={{ color: isDark ? '#F87171' : '#DC2626', fontSize: 18 }} />
           </Box>
-          <Typography component="span" variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem' }}>
+          <Typography component="span" variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
             {title}
           </Typography>
         </Box>
       </DialogTitle>
-      <DialogContent>
-        <DialogContentText sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
+      <DialogContent sx={{ px: 2.5, pb: 1 }}>
+        <DialogContentText sx={{ color: 'text.secondary', fontSize: '0.84rem', lineHeight: 1.5 }}>
           {message}
         </DialogContentText>
       </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions sx={{ px: 2.5, pb: 2, pt: 0.5 }}>
         <Button
           onClick={onCancel}
+          size="small"
           sx={{
             color: 'text.secondary',
-            '&:hover': { backgroundColor: 'rgba(0,0,0,0.04)' },
+            '&:hover': { backgroundColor: 'action.hover' },
           }}
         >
           {cancelText}
@@ -67,11 +72,12 @@ export default function ConfirmDialog({
         <Button
           onClick={onConfirm}
           variant="contained"
+          size="small"
           color="error"
           sx={{
-            background: 'linear-gradient(135deg, #c62828 0%, #e53935 100%)',
+            background: 'linear-gradient(135deg, #DC2626 0%, #EF4444 100%)',
             '&:hover': {
-              background: 'linear-gradient(135deg, #b71c1c 0%, #c62828 100%)',
+              background: 'linear-gradient(135deg, #B91C1C 0%, #DC2626 100%)',
             },
           }}
         >

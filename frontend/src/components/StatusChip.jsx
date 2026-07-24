@@ -1,19 +1,19 @@
 import { Chip } from '@mui/material';
 
 const statusConfig = {
-  active: { label: 'Active', bg: '#EAF8EE', color: '#2ECC71' },
-  inactive: { label: 'Inactive', bg: '#F3F3F3', color: '#8A8A8A' },
-  upcoming: { label: 'Upcoming', bg: '#F5EFE6', color: '#1A1A1A' },
-  scheduled: { label: 'Scheduled', bg: '#EAF4FF', color: '#4A90D9' },
-  completed: { label: 'Completed', bg: '#EAF8EE', color: '#2ECC71' },
-  cancelled: { label: 'Cancelled', bg: '#FCECEC', color: '#E74C3C' },
-  payment: { label: 'Payment', bg: '#FCECEC', color: '#E74C3C' },
-  receipt: { label: 'Receipt', bg: '#EAF8EE', color: '#2ECC71' },
-  adjustment: { label: 'Adjustment', bg: '#FFF6E8', color: '#F4A623' },
+  active: { label: 'Active', bg: '#DCFCE7', color: '#16A34A' },
+  inactive: { label: 'Inactive', bg: '#F4F4F5', color: '#71717A' },
+  upcoming: { label: 'Upcoming', bg: '#FEF3C7', color: '#D97706' },
+  scheduled: { label: 'Scheduled', bg: '#DBEAFE', color: '#2563EB' },
+  completed: { label: 'Completed', bg: '#DCFCE7', color: '#16A34A' },
+  cancelled: { label: 'Cancelled', bg: '#FEE2E2', color: '#DC2626' },
+  payment: { label: 'Payment', bg: '#FEE2E2', color: '#DC2626' },
+  receipt: { label: 'Receipt', bg: '#DCFCE7', color: '#16A34A' },
+  adjustment: { label: 'Adjustment', bg: '#FEF3C7', color: '#D97706' },
 };
 
 export default function StatusChip({ status, size = 'small' }) {
-  const config = statusConfig[status] || { label: status, bg: '#F3F3F3', color: '#8A8A8A' };
+  const config = statusConfig[status] || { label: status, bg: '#F4F4F5', color: '#71717A' };
 
   return (
     <Chip
@@ -21,13 +21,15 @@ export default function StatusChip({ status, size = 'small' }) {
       size={size}
       variant="filled"
       sx={{
-        fontWeight: 700,
-        fontSize: '0.7rem',
-        letterSpacing: '0.03em',
+        fontWeight: 600,
+        fontSize: '0.68rem',
+        letterSpacing: '0.02em',
         textTransform: 'uppercase',
         backgroundColor: config.bg,
         color: config.color,
-        border: `1px solid ${config.bg}`,
+        border: 'none',
+        borderRadius: 2,
+        height: 22,
       }}
     />
   );

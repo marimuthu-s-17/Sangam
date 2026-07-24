@@ -160,13 +160,9 @@ export default function Reports() {
       setPreviewTitle(res.data?.title || 'Report Preview');
       setColumns(getColumns(reportType));
       
-      // Add standard React Grid compatible unique ID mapper
+      // The backend now provides a real 'id' for every row natively
       const rawData = res.data?.data || [];
-      const formattedData = rawData.map((item, idx) => ({
-        ...item,
-        id: item.id || item.payment_id || idx + 1,
-      }));
-      setPreviewData(formattedData);
+      setPreviewData(rawData);
     } catch (err) {
       console.error('Failed to load report preview:', err);
       setSnack({ open: true, msg: 'Error generating report preview.', sev: 'error' });

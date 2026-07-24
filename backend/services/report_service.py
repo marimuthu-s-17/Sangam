@@ -104,6 +104,7 @@ class ReportService:
         rows = res.all()
         return [
             {
+                "id": payment.id,
                 "payment_id": payment.id,
                 "loan_id": loan.id,
                 "borrower_name": loan.borrower_name,
@@ -203,14 +204,14 @@ class ReportService:
         overall_profit_loss = interest_earned + total_receipts - total_expenses - total_payments
         
         return [
-            {"metric": "Total Collections (Contributions)", "amount": float(total_contrib)},
-            {"metric": "General Receipts", "amount": float(total_receipts)},
-            {"metric": "Total Expenses", "amount": float(total_expenses)},
-            {"metric": "General Payments", "amount": float(total_payments)},
-            {"metric": "Interest Earned from Loans", "amount": float(interest_earned)},
-            {"metric": "Outstanding Loan Principal", "amount": float(outstanding_loans)},
-            {"metric": "Cash Available (Sangam Balance)", "amount": float(available_balance)},
-            {"metric": "Overall Net Profit / Loss", "amount": float(overall_profit_loss)}
+            {"id": 1, "metric": "Total Collections (Contributions)", "amount": float(total_contrib)},
+            {"id": 2, "metric": "General Receipts", "amount": float(total_receipts)},
+            {"id": 3, "metric": "Total Expenses", "amount": float(total_expenses)},
+            {"id": 4, "metric": "General Payments", "amount": float(total_payments)},
+            {"id": 5, "metric": "Interest Earned from Loans", "amount": float(interest_earned)},
+            {"id": 6, "metric": "Outstanding Loan Principal", "amount": float(outstanding_loans)},
+            {"id": 7, "metric": "Cash Available (Sangam Balance)", "amount": float(available_balance)},
+            {"id": 8, "metric": "Overall Net Profit / Loss", "amount": float(overall_profit_loss)}
         ]
 
     @staticmethod

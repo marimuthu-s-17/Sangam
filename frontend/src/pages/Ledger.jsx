@@ -505,7 +505,8 @@ export default function Ledger() {
         ) : (
           <Box sx={{ height: 600, width: '100%' }}>
             <DataGrid
-              rows={summaries.map((s, idx) => ({ ...s, id: s.member_id || idx }))}
+              rows={summaries}
+              getRowId={(row) => row.member_id}
               columns={columns}
               pageSizeOptions={[10, 20, 50, 100]}
               initialState={{

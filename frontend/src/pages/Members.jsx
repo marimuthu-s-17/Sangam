@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Box,
   Grid,
@@ -31,7 +31,7 @@ import {
   Paper,
   TablePagination,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+
 import { useTranslation } from '../context/LanguageContext';
 
 import {
@@ -299,49 +299,53 @@ export default function Members() {
     document.body.removeChild(link);
   };
 
-  const columns = [
-    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
-    { field: 'name', headerName: 'Name', flex: 1.2, minWidth: 150, align: 'left', headerAlign: 'left' },
-    { field: 'phone', headerName: 'Phone', width: 130, align: 'left', headerAlign: 'left' },
-    { field: 'age', headerName: 'Age', width: 80, align: 'center', headerAlign: 'center' },
-    { field: 'gender', headerName: 'Gender', width: 100, align: 'center', headerAlign: 'center', renderCell: (p) => p.value ? p.value.charAt(0).toUpperCase() + p.value.slice(1) : '—' },
-    { field: 'joined_date', headerName: 'Joined', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => formatDate(p.value) },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 120,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (p) => <StatusChip status={p.value} />,
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 150,
-      sortable: false,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => (
+  const columnHelper = createColumnHelper();
+  const columns = useMemo(() => [
+    columnHelper.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+    columnHelper.accessor('name', { header: 'Name', meta: { align: 'left' } }),
+    columnHelper.accessor('phone', { header: 'Phone', meta: { align: 'left' } }),
+    columnHelper.accessor('age', { header: 'Age', meta: { align: 'center' } }),
+    columnHelper.accessor('gender', {
+      header: 'Gender',
+      meta: { align: 'center' },
+      cell: (info) => info.getValue() ? info.getValue().charAt(0).toUpperCase() + info.getValue().slice(1) : '—'
+    }),
+    columnHelper.accessor('joined_date', {
+      header: 'Joined',
+      meta: { align: 'center' },
+      cell: (info) => formatDate(info.getValue())
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      meta: { align: 'center' },
+      cell: (info) => <StatusChip status={info.getValue()} />
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: 'Actions',
+      meta: { align: 'right' },
+      enableSorting: false,
+      cell: (info) => (
         <Box>
           <Tooltip title="View Details">
-            <IconButton size="small" onClick={() => openDetail(params.row)} color="info">
+            <IconButton size="small" onClick={() => openDetail(info.row.original)} color="info">
               <ViewIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Edit">
-            <IconButton size="small" onClick={(e) => openEdit(params.row, e)} color="primary">
+            <IconButton size="small" onClick={(e) => openEdit(info.row.original, e)} color="primary">
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton size="small" onClick={(e) => openDelete(params.row, e)} color="error">
+            <IconButton size="small" onClick={(e) => openDelete(info.row.original, e)} color="error">
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>
       ),
-    },
-  ];
+    }),
+  ], [openDetail, openEdit, openDelete]);
 
 
   return (
@@ -453,21 +457,20 @@ export default function Members() {
           <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
         </Box>
       ) : (
-        <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-          <DataGrid
-            rows={members}
-            columns={columns}
-            rowCount={total}
-            loading={loading}
-            paginationMode="server"
-            paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[10, 20, 50, 100]}
-            disableRowSelectionOnClick
-            rowHeight={52}
-            sx={{ border: 0 }}
-          />
-        </Paper>
+        <ReusableTable
+          data={members}
+          columns={columns}
+          loading={loading}
+          totalItems={total}
+          pagination={{ pageIndex: paginationModel.page, pageSize: paginationModel.pageSize }}
+          onPaginationChange={(updater) => {
+            setPaginationModel(prev => {
+              const nextState = typeof updater === 'function' ? updater({ pageIndex: prev.page, pageSize: prev.pageSize }) : updater;
+              return { page: nextState.pageIndex, pageSize: nextState.pageSize };
+            });
+          }}
+          pageCount={Math.ceil(total / paginationModel.pageSize)}
+        />
       )}
 
       {/* Floating Add Button */}

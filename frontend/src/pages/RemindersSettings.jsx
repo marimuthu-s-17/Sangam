@@ -14,7 +14,8 @@ import {
   Checkbox,
   Tooltip,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { createColumnHelper } from '@tanstack/react-table';
+import ReusableTable from '../components/table/ReusableTable';
 import {
   NotificationsActive as NotificationsIcon,
   PlayArrow as StartIcon,
@@ -110,38 +111,37 @@ export default function RemindersSettings() {
     return preview;
   }, [globalSettings?.template]);
 
-  const historyColumns = [
-    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
-    {
-      field: 'sent_at',
-      headerName: t('sentAt') || 'Sent At',
-      width: 170,
-      valueFormatter: (value) => new Date(value).toLocaleString()
-    },
-    { field: 'member_name', headerName: 'Member', width: 140 },
-    { field: 'reminder_type', headerName: 'Channel', width: 100, align: 'center', headerAlign: 'center', renderCell: (p) => p.value.toUpperCase() },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 120,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (p) => (
+  const columnHelper = createColumnHelper();
+  const historyColumns = useMemo(() => [
+    columnHelper.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+    columnHelper.accessor('sent_at', {
+      header: t('sentAt') || 'Sent At',
+      meta: { align: 'left' },
+      cell: (info) => new Date(info.getValue()).toLocaleString(),
+    }),
+    columnHelper.accessor('member_name', { header: 'Member', meta: { align: 'left' } }),
+    columnHelper.accessor('reminder_type', {
+      header: 'Channel',
+      meta: { align: 'center' },
+      cell: (info) => String(info.getValue() || '').toUpperCase(),
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      meta: { align: 'center' },
+      cell: (info) => (
         <Alert 
-          severity={p.value === 'delivered' ? 'success' : p.value === 'sent' ? 'info' : 'error'} 
+          severity={info.getValue() === 'delivered' ? 'success' : info.getValue() === 'sent' ? 'info' : 'error'} 
           sx={{ py: 0, px: 1, fontSize: '0.75rem', height: 24, display: 'flex', alignItems: 'center' }}
         >
-          {p.value.toUpperCase()}
+          {String(info.getValue() || '').toUpperCase()}
         </Alert>
       )
-    },
-    { 
-      field: 'message', 
-      headerName: 'Message Content', 
-      flex: 1, 
-      minWidth: 300,
-      renderCell: (p) => (
-        <Tooltip title={p.value} enterDelay={300} arrow>
+    }),
+    columnHelper.accessor('message', {
+      header: 'Message Content',
+      meta: { align: 'left' },
+      cell: (info) => (
+        <Tooltip title={info.getValue()} enterDelay={300} arrow>
           <span style={{ 
             overflow: 'hidden', 
             textOverflow: 'ellipsis', 
@@ -149,12 +149,12 @@ export default function RemindersSettings() {
             width: '100%', 
             display: 'block' 
           }}>
-            {p.value}
+            {info.getValue()}
           </span>
         </Tooltip>
       )
-    }
-  ];
+    }),
+  ], [t]);
 
   if (loading) {
     return (
@@ -288,20 +288,10 @@ export default function RemindersSettings() {
               </Stack>
 
               <Box sx={{ flexGrow: 1, height: 500 }}>
-                <DataGrid
-                  rows={history}
+                <ReusableTable
+                  data={history}
                   columns={historyColumns}
                   loading={historyLoading}
-                  pageSizeOptions={[10, 20, 50]}
-                  initialState={{
-                    pagination: { paginationModel: { pageSize: 10 } }
-                  }}
-                  sx={{
-                    border: 0,
-                    '& .MuiDataGrid-columnHeaders': {
-                      backgroundColor: 'background.paper',
-                    }
-                  }}
                 />
               </Box>
             </CardContent>

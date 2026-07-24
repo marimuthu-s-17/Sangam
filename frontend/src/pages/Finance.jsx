@@ -34,7 +34,8 @@ import {
   Divider,
   TablePagination,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { createColumnHelper } from '@tanstack/react-table';
+import ReusableTable from '../components/table/ReusableTable';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -452,46 +453,38 @@ export default function Finance() {
   }, [tabIndex, fetchLoans, fetchLoanStats, fetchTransactions]);
 
   // General Transactions Columns Definition
-  const txnColumns = [
-    { field: 'id', headerName: 'ID', width: 70 },
-    { field: 'member_name', headerName: 'Member', flex: 1.2, minWidth: 140 },
-    {
-      field: 'transaction_type',
-      headerName: 'Type',
-      flex: 0.8,
-      minWidth: 110,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (p) => <StatusChip status={p.value} />,
-    },
-    {
-      field: 'amount',
-      headerName: 'Amount',
-      flex: 0.9,
-      minWidth: 120,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (p) => formatCurrency(p.value),
-    },
-    {
-      field: 'transaction_date',
-      headerName: 'Date',
-      flex: 0.8,
-      minWidth: 110,
-      renderCell: (p) => formatDate(p.value),
-    },
-    { field: 'description', headerName: 'Description', flex: 1.5, minWidth: 180 },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 120,
-      sortable: false,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (p) => (
+  const columnHelper = createColumnHelper();
+  const txnColumns = useMemo(() => [
+    columnHelper.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+    columnHelper.accessor('member_name', { header: 'Member', meta: { align: 'left' } }),
+    columnHelper.accessor('transaction_type', {
+      header: 'Type',
+      meta: { align: 'center' },
+      cell: (info) => <StatusChip status={info.getValue()} />,
+    }),
+    columnHelper.accessor('amount', {
+      header: 'Amount',
+      meta: { align: 'right' },
+      cell: (info) => formatCurrency(info.getValue()),
+    }),
+    columnHelper.accessor('transaction_date', {
+      header: 'Date',
+      meta: { align: 'center' },
+      cell: (info) => formatDate(info.getValue()),
+    }),
+    columnHelper.accessor('description', {
+      header: 'Description',
+      meta: { align: 'left' },
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: 'Actions',
+      meta: { align: 'center' },
+      enableSorting: false,
+      cell: (info) => (
         <Box>
           <Tooltip title="Edit">
-            <IconButton size="small" onClick={() => openEditTxn(p.row)} color="primary">
+            <IconButton size="small" onClick={() => openEditTxn(info.row.original)} color="primary">
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -499,7 +492,7 @@ export default function Finance() {
             <IconButton
               size="small"
               onClick={() => {
-                setDeletingTxnId(p.row.id);
+                setDeletingTxnId(info.row.original.id);
                 setTxnDeleteOpen(true);
               }}
               color="error"
@@ -509,30 +502,28 @@ export default function Finance() {
           </Tooltip>
         </Box>
       ),
-    },
-  ];
+    }),
+  ], [openEditTxn]);
 
-  const loansColumns = [
-    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
-    { field: 'borrower_name', headerName: 'Borrower Name', flex: 1.2, minWidth: 150, align: 'left', headerAlign: 'left' },
-    { field: 'loan_amount', headerName: 'Loan Amount', width: 140, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-    { field: 'interest_rate', headerName: 'Interest Rate', width: 150, align: 'right', headerAlign: 'right', renderCell: (params) => `${params.row.interest_rate}% (${formatCurrency(params.row.monthly_interest_amount || 0)})` },
-    { field: 'due_date', headerName: 'Next Due Date', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => formatDate(p.value) },
-    { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 280,
-      sortable: false,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => (
+  const loansColumns = useMemo(() => [
+    columnHelper.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+    columnHelper.accessor('borrower_name', { header: 'Borrower Name', meta: { align: 'left' } }),
+    columnHelper.accessor('loan_amount', { header: 'Loan Amount', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+    columnHelper.accessor('interest_rate', { header: 'Interest Rate', meta: { align: 'right' }, cell: (info) => `${info.getValue()}% (${formatCurrency(info.row.original.monthly_interest_amount || 0)})` }),
+    columnHelper.accessor('due_date', { header: 'Next Due Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+    columnHelper.accessor('status', { header: 'Status', meta: { align: 'center' }, cell: (info) => <StatusChip status={info.getValue()} /> }),
+    columnHelper.display({
+      id: 'actions',
+      header: 'Actions',
+      meta: { align: 'right' },
+      enableSorting: false,
+      cell: (info) => (
         <Box>
           <Button
             variant="contained"
             color="primary"
             size="small"
-            onClick={() => openRecordPayment(params.row)}
+            onClick={() => openRecordPayment(info.row.original)}
             sx={{ mr: 1, py: 0.5 }}
           >
             Record Payment
@@ -541,25 +532,25 @@ export default function Finance() {
             variant="outlined"
             color="info"
             size="small"
-            onClick={() => openHistory(params.row)}
+            onClick={() => openHistory(info.row.original)}
             sx={{ mr: 1, py: 0.5 }}
           >
             History
           </Button>
           <Tooltip title="Edit">
-            <IconButton size="small" onClick={() => openEditLoan(params.row)} color="primary">
+            <IconButton size="small" onClick={() => openEditLoan(info.row.original)} color="primary">
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton size="small" onClick={() => { setDeletingLoanId(params.row.id); setLoanDeleteOpen(true); }} color="error">
+            <IconButton size="small" onClick={() => { setDeletingLoanId(info.row.original.id); setLoanDeleteOpen(true); }} color="error">
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>
       ),
-    },
-  ];
+    }),
+  ], [openRecordPayment, openHistory, openEditLoan]);
 
   return (
     <Box sx={{ pb: 4 }}>
@@ -723,18 +714,19 @@ export default function Finance() {
             </Box>
           ) : (
             <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-              <DataGrid
-                rows={loans}
+              <ReusableTable
+                data={loans}
                 columns={loansColumns}
-                rowCount={total}
                 loading={loansLoading}
-                paginationMode="server"
-                paginationModel={paginationModel}
-                onPaginationModelChange={setPaginationModel}
-                pageSizeOptions={[10, 20, 50, 100]}
-                disableRowSelectionOnClick
-                rowHeight={52}
-                sx={{ border: 0 }}
+                totalItems={total}
+                pagination={{ pageIndex: paginationModel.page, pageSize: paginationModel.pageSize }}
+                onPaginationChange={(updater) => {
+                  setPaginationModel(prev => {
+                    const nextState = typeof updater === 'function' ? updater({ pageIndex: prev.page, pageSize: prev.pageSize }) : updater;
+                    return { page: nextState.pageIndex, pageSize: nextState.pageSize };
+                  });
+                }}
+                pageCount={Math.ceil(total / (paginationModel.pageSize || 10))}
               />
             </Paper>
           )}
@@ -745,14 +737,11 @@ export default function Finance() {
         // ====================================================
         <Box>
           {/* Table */}
-          <Box className="datagrid-container" sx={{ height: 600 }}>
-            <DataGrid
-              rows={txnRows}
+          <Box sx={{ height: 600 }}>
+            <ReusableTable
+              data={txnRows}
               columns={txnColumns}
               loading={txnLoading}
-              pageSizeOptions={[10, 25, 50, 100]}
-              initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-              disableRowSelectionOnClick
             />
           </Box>
         </Box>

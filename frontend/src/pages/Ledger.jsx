@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Grid,
@@ -23,7 +23,8 @@ import {
   TableCell,
   TableBody,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { createColumnHelper } from '@tanstack/react-table';
+import ReusableTable from '../components/table/ReusableTable';
 import { useSettings } from '../context/SettingsContext';
 import {
   Download as DownloadIcon,
@@ -35,6 +36,7 @@ import {
   EmojiEvents as EmojiEventsIcon,
   TrendingUp as TrendingUpIcon,
   Close as CloseIcon,
+  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
 
 import ledgerService from '../services/ledgerService';
@@ -85,12 +87,13 @@ export default function Ledger() {
   }, [fetchLedgerSummaries]);
 
   // Click handler to open detailed ledger
-  const handleMemberClick = async (member) => {
+  const fetchDetailedLedger = async (memberId) => {
+    const member = summaries.find(m => m.member_id === memberId);
     setSelectedMember(member);
     setDetailsOpen(true);
     setDetailsLoading(true);
     try {
-      const res = await ledgerService.getMemberLedger(member.member_id);
+      const res = await ledgerService.getMemberLedger(memberId);
       setDetailedLedger(res.data || []);
     } catch (err) {
       console.error('Failed to load detailed member ledger', err);
@@ -363,98 +366,84 @@ export default function Ledger() {
   };
 
   // Columns for main summary table
-  const columns = [
-    { field: 'name', headerName: 'Member Name', flex: 1, minWidth: 150 },
-    { field: 'phone', headerName: 'Phone', width: 120 },
-    {
-      field: 'total_contributions',
-      headerName: 'Total Contributions',
-      width: 155,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => formatCurrency(params.row.total_contributions),
-    },
-    {
-      field: 'total_dividend_received',
-      headerName: 'Total Dividend',
-      width: 140,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => formatCurrency(params.row.total_dividend_received),
-    },
-    {
-      field: 'total_prize_won',
-      headerName: 'Total Prize Won',
-      width: 140,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => formatCurrency(params.row.total_prize_won),
-    },
-    {
-      field: 'winning_month',
-      headerName: 'Winning Month',
-      width: 160,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (params) => {
-        const val = params.row.winning_month;
+  const columnHelper = createColumnHelper();
+  const columns = useMemo(() => [
+    columnHelper.accessor('name', { header: 'Member Name', meta: { align: 'left' } }),
+    columnHelper.accessor('phone', { header: 'Phone', meta: { align: 'left' } }),
+    columnHelper.accessor('total_contributions', {
+      header: 'Total Contributions',
+      meta: { align: 'right' },
+      cell: (info) => formatCurrency(info.getValue()),
+    }),
+    columnHelper.accessor('total_dividend_received', {
+      header: 'Total Dividend',
+      meta: { align: 'right' },
+      cell: (info) => formatCurrency(info.getValue()),
+    }),
+    columnHelper.accessor('total_prize_won', {
+      header: 'Total Prize Won',
+      meta: { align: 'right' },
+      cell: (info) => formatCurrency(info.getValue()),
+    }),
+    columnHelper.accessor('winning_month', {
+      header: 'Winning Month',
+      meta: { align: 'center' },
+      cell: (info) => {
+        const val = info.getValue();
         return val === 'None' ? (
           <Typography variant="body2" color="text.secondary">None</Typography>
         ) : (
           <Chip label={val} size="small" color="error" variant="outlined" sx={{ fontWeight: 600 }} />
         );
       },
-    },
-    {
-      field: 'outstanding_balance',
-      headerName: 'Outstanding Balance',
-      width: 160,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => {
-        const val = params.row.outstanding_balance;
+    }),
+    columnHelper.accessor('outstanding_balance', {
+      header: 'Outstanding Balance',
+      meta: { align: 'right' },
+      cell: (info) => {
+        const val = info.getValue();
         return val > 0 ? (
           <Chip label={formatCurrency(val)} size="small" color="warning" sx={{ fontWeight: 600 }} />
         ) : (
           <Typography variant="body2" color="text.secondary">₹0</Typography>
         );
       },
-    },
-    {
-      field: 'overall_net_position',
-      headerName: 'Net Position',
-      width: 145,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => {
-        const val = params.row.overall_net_position;
+    }),
+    columnHelper.accessor('overall_net_position', {
+      header: 'Net Position',
+      meta: { align: 'right' },
+      cell: (info) => {
+        const val = info.getValue();
         return (
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 700,
-              color: val >= 0 ? 'success.main' : 'error.main',
-            }}
-          >
-            {formatCurrency(val)}
-          </Typography>
+          <Box sx={{
+            color: val >= 0 ? 'success.main' : 'error.main',
+            fontWeight: 700,
+            fontSize: '1.05rem',
+          }}>
+            {val >= 0 ? '+' : ''}{formatCurrency(val)}
+          </Box>
         );
       },
-    },
-    {
-      field: 'actions',
-      headerName: 'Statement',
-      width: 100,
-      sortable: false,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (params) => (
-        <IconButton color="primary" onClick={() => handleMemberClick(params.row)}>
-          <ArrowIcon />
-        </IconButton>
+    }),
+    columnHelper.display({
+      id: 'actions',
+      header: 'Detailed View',
+      meta: { align: 'center' },
+      enableSorting: false,
+      cell: (info) => (
+        <Button
+          size="small"
+          variant="contained"
+          color="primary"
+          startIcon={<VisibilityIcon />}
+          onClick={() => fetchDetailedLedger(info.row.original.member_id)}
+          sx={{ borderRadius: 2, textTransform: 'none' }}
+        >
+          View Full Ledger
+        </Button>
       ),
-    },
-  ];
+    }),
+  ], []);
 
   return (
     <Box sx={{ py: 3, px: { xs: 1, md: 3 } }}>
@@ -504,15 +493,10 @@ export default function Ledger() {
           </Box>
         ) : (
           <Box sx={{ height: 600, width: '100%' }}>
-            <DataGrid
-              rows={summaries}
-              getRowId={(row) => row.member_id}
+            <ReusableTable
+              data={summaries.map(s => ({ ...s, id: s.member_id }))}
               columns={columns}
-              pageSizeOptions={[10, 20, 50, 100]}
-              initialState={{
-                pagination: { paginationModel: { pageSize: 10 } },
-              }}
-              disableRowSelectionOnClick
+              loading={false}
             />
           </Box>
         )}

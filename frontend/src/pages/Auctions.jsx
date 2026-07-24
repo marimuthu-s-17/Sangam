@@ -40,7 +40,8 @@ import {
   AccordionDetails,
   TablePagination,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { createColumnHelper } from '@tanstack/react-table';
+import ReusableTable from '../components/table/ReusableTable';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -1049,95 +1050,59 @@ export default function Auctions() {
                         )}
                       </Stack>
                       <Paper sx={{ height: 400, borderRadius: 2.5, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-                        <DataGrid
-                          rows={currentMonthDetails.auction_month.contributions.map((c, idx) => ({ ...c, s_no: idx + 1 }))}
-                          columns={[
-                            { field: 's_no', headerName: 'S.No', width: 60, sortable: false, align: 'center', headerAlign: 'center' },
-                            { field: 'name', headerName: 'Member Name', flex: 1, minWidth: 140 },
-                            {
-                              field: 'minimum_amount',
-                              headerName: 'Required',
-                              width: 110,
-                              align: 'right',
-                              headerAlign: 'right',
-                              renderCell: (params) => formatCurrency(params.row.minimum_amount),
-                            },
-                            {
-                              field: 'paid_amount',
-                              headerName: 'Amount Paid',
-                              width: 140,
-                              align: 'right',
-                              headerAlign: 'right',
-                              renderCell: (params) => (
-                                <PaidAmountInput
-                                  row={params.row}
-                                  isCompleted={currentMonthDetails.stats.round_status === 'completed'}
-                                  onUpdatePaidAmount={handleUpdatePaidAmount}
-                                />
-                              )
-                            },
-                            {
-                              field: 'balance',
-                              headerName: 'Pending Balance',
-                              width: 130,
-                              align: 'right',
-                              headerAlign: 'right',
-                              renderCell: (params) => {
-                                const balance = params.row.minimum_amount - params.row.paid_amount;
-                                return formatCurrency(balance > 0 ? balance : 0);
-                              }
-                            },
-                            {
-                              field: 'is_eligible',
-                              headerName: 'Eligibility',
-                              width: 130,
-                              align: 'center',
-                              headerAlign: 'center',
-                              renderCell: (params) => {
-                                const balance = params.row.minimum_amount - params.row.paid_amount;
-                                if (params.row.already_won) {
-                                  return <Chip label="Won" size="small" color="error" sx={{ fontWeight: 700 }} />;
+                        <ReusableTable
+                          hidePagination={true}
+                          data={currentMonthDetails.auction_month.contributions.map((c, idx) => ({ ...c, s_no: idx + 1 }))}
+                          columns={(() => {
+                            const ch = createColumnHelper();
+                            return [
+                              ch.accessor('s_no', { header: 'S.No', meta: { align: 'center' }, enableSorting: false }),
+                              ch.accessor('name', { header: 'Member Name', meta: { align: 'left' } }),
+                              ch.accessor('minimum_amount', {
+                                header: 'Required',
+                                meta: { align: 'right' },
+                                cell: (info) => formatCurrency(info.getValue())
+                              }),
+                              ch.accessor('paid_amount', {
+                                header: 'Amount Paid',
+                                meta: { align: 'right' },
+                                cell: (info) => (
+                                  <PaidAmountInput
+                                    row={info.row.original}
+                                    isCompleted={currentMonthDetails.stats.round_status === 'completed'}
+                                    onUpdatePaidAmount={handleUpdatePaidAmount}
+                                  />
+                                )
+                              }),
+                              ch.accessor('balance', {
+                                header: 'Pending Balance',
+                                meta: { align: 'right' },
+                                cell: (info) => {
+                                  const balance = info.row.original.minimum_amount - info.row.original.paid_amount;
+                                  return formatCurrency(balance > 0 ? balance : 0);
                                 }
-                                if (balance <= 0) {
-                                  return <Chip label="Eligible" size="small" color="success" sx={{ fontWeight: 700 }} />;
+                              }),
+                              ch.accessor('is_eligible', {
+                                header: 'Eligibility',
+                                meta: { align: 'center' },
+                                cell: (info) => {
+                                  const balance = info.row.original.minimum_amount - info.row.original.paid_amount;
+                                  if (info.row.original.already_won) {
+                                    return <Chip label="Won" size="small" color="error" sx={{ fontWeight: 700 }} />;
+                                  }
+                                  if (balance <= 0) {
+                                    return <Chip label="Eligible" size="small" color="success" sx={{ fontWeight: 700 }} />;
+                                  }
+                                  return <Chip label="Ineligible" size="small" color="default" variant="outlined" />;
                                 }
-                                return <Chip label="Ineligible" size="small" color="default" variant="outlined" />;
-                              }
-                            },
-                            {
-                              field: 'dividend_received',
-                              headerName: 'Total Dividends',
-                              width: 130,
-                              align: 'right',
-                              headerAlign: 'right',
-                              renderCell: (params) => formatCurrency(params.row.dividend_received),
-                            },
-                          ]}
-                          pageSizeOptions={[10, 20, 50, 100]}
-                          disableRowSelectionOnClick
-                          getRowClassName={(params) => {
-                            if (params.row.already_won) return 'row-already-won';
-                            const balance = params.row.minimum_amount - params.row.paid_amount;
-                            if (balance > 0) return 'row-not-paid';
-                            return '';
-                          }}
-                          sx={{
-                            border: 0,
-                            '& .row-already-won': {
-                              backgroundColor: '#ffebee !important',
-                              color: '#c62828 !important',
-                              '&:hover': {
-                                backgroundColor: '#ffcdd2 !important',
-                              }
-                            },
-                            '& .row-not-paid': {
-                              backgroundColor: '#f5f5f5 !important',
-                              color: '#9e9e9e !important',
-                              '&:hover': {
-                                backgroundColor: '#eeeeee !important',
-                              }
-                            }
-                          }}
+                              }),
+                              ch.accessor('dividend_received', {
+                                header: 'Total Dividends',
+                                meta: { align: 'right' },
+                                cell: (info) => formatCurrency(info.getValue())
+                              })
+                            ];
+                          })()}
                         />
                       </Paper>
                     </Grid>
@@ -1632,50 +1597,51 @@ export default function Auctions() {
     );
   }
 
-  const mainAuctionsColumns = [
-    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
-    { field: 'name', headerName: 'Auction Name', flex: 1.2, minWidth: 150, align: 'left', headerAlign: 'left' },
-    { field: 'members_count', headerName: 'Members', width: 110, align: 'center', headerAlign: 'center' },
-    { field: 'monthly_contribution', headerName: 'Contribution', width: 150, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-    { field: 'commission', headerName: 'Commission', width: 130, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-    { field: 'prize_amount', headerName: 'Prize Amount', width: 140, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-    { field: 'total_months', headerName: 'Duration', width: 110, align: 'center', headerAlign: 'center', renderCell: (p) => `${p.value} Months` },
-    { field: 'current_month', headerName: 'Progress', width: 110, align: 'center', headerAlign: 'center', renderCell: (params) => `${params.row.current_month}/${params.row.total_months}` },
-    { field: 'start_date', headerName: 'Start Date', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => formatDate(p.value) },
-    { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 260,
-      sortable: false,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => (
-        <Box>
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            startIcon={<AuctionIcon />}
-            onClick={() => setViewingAuction(params.row)}
-            sx={{ mr: 1, py: 0.5 }}
-          >
-            Open
-          </Button>
-          <Tooltip title="Edit">
-            <IconButton size="small" onClick={(e) => openEdit(params.row, e)} color="primary">
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton size="small" onClick={(e) => openDelete(params.row, e)} color="error" disabled={params.row.status === 'cancelled'}>
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
-    },
-  ];
+  const mainAuctionsColumns = useMemo(() => {
+    const ch = createColumnHelper();
+    return [
+      ch.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+      ch.accessor('name', { header: 'Auction Name', meta: { align: 'left' } }),
+      ch.accessor('members_count', { header: 'Members', meta: { align: 'center' } }),
+      ch.accessor('monthly_contribution', { header: 'Contribution', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+      ch.accessor('commission', { header: 'Commission', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+      ch.accessor('prize_amount', { header: 'Prize Amount', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+      ch.accessor('total_months', { header: 'Duration', meta: { align: 'center' }, cell: (info) => `${info.getValue()} Months` }),
+      ch.accessor('current_month', { header: 'Progress', meta: { align: 'center' }, cell: (info) => `${info.row.original.current_month}/${info.row.original.total_months}` }),
+      ch.accessor('start_date', { header: 'Start Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+      ch.accessor('status', { header: 'Status', meta: { align: 'center' }, cell: (info) => <StatusChip status={info.getValue()} /> }),
+      ch.display({
+        id: 'actions',
+        header: 'Actions',
+        meta: { align: 'right' },
+        enableSorting: false,
+        cell: (info) => (
+          <Box>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<AuctionIcon />}
+              onClick={() => setViewingAuction(info.row.original)}
+              sx={{ mr: 1, py: 0.5 }}
+            >
+              Open
+            </Button>
+            <Tooltip title="Edit">
+              <IconButton size="small" onClick={(e) => openEdit(info.row.original, e)} color="primary">
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton size="small" onClick={(e) => openDelete(info.row.original, e)} color="error" disabled={info.row.original.status === 'cancelled'}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
+      }),
+    ];
+  }, [openEdit, openDelete]);
 
   return (
     <Box sx={{ position: 'relative', pb: 4 }}>
@@ -1758,7 +1724,7 @@ export default function Auctions() {
         <Box sx={{ flexGrow: 1 }} />
       </Box>
 
-      {/* DataGrid Auction List */}
+      {/* ReusableTable Auction List */}
       {loading ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
           <Skeleton variant="rectangular" height={50} sx={{ borderRadius: 2 }} />
@@ -1766,18 +1732,28 @@ export default function Auctions() {
         </Box>
       ) : (
         <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-          <DataGrid
-            rows={rows}
+          <ReusableTable
+            data={rows}
             columns={mainAuctionsColumns}
-            rowCount={total}
             loading={loading}
-            paginationMode="server"
-            paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[10, 20, 50, 100]}
-            disableRowSelectionOnClick
-            rowHeight={52}
-            sx={{ border: 0 }}
+            totalItems={total}
+            pagination={{ pageIndex: paginationModel.page, pageSize: paginationModel.pageSize }}
+            onPaginationChange={(updater) => {
+              setPaginationModel(prev => {
+                const nextState = typeof updater === 'function' ? updater({ pageIndex: prev.page, pageSize: prev.pageSize }) : updater;
+                return { page: nextState.pageIndex, pageSize: nextState.pageSize };
+              });
+            }}
+            pageCount={Math.ceil(total / (paginationModel.pageSize || 20))}
+            sorting={sortModel.map(s => ({ id: s.field, desc: s.sort === 'desc' }))}
+            onSortingChange={(updater) => {
+              setSortModel(prev => {
+                const prevSort = prev.map(s => ({ id: s.field, desc: s.sort === 'desc' }));
+                const nextSort = typeof updater === 'function' ? updater(prevSort) : updater;
+                if (!nextSort || nextSort.length === 0) return [];
+                return nextSort.map(s => ({ field: s.id, sort: s.desc ? 'desc' : 'asc' }));
+              });
+            }}
           />
         </Paper>
       )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from '../context/LanguageContext';
 import {
   Box,
@@ -22,7 +22,8 @@ import {
   Tooltip,
   IconButton,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { createColumnHelper } from '@tanstack/react-table';
+import ReusableTable from '../components/table/ReusableTable';
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -211,37 +212,36 @@ export default function Expenses() {
     }
   };
 
-  const columns = [
-    { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
-    { field: 'description', headerName: 'Description', flex: 1.2, minWidth: 150, align: 'left', headerAlign: 'left' },
-    { field: 'amount', headerName: 'Amount', width: 140, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-    { field: 'category', headerName: 'Category', width: 130, align: 'center', headerAlign: 'center', renderCell: (p) => <Box sx={{ textTransform: 'capitalize' }}>{p.value}</Box> },
-    { field: 'expense_date', headerName: 'Date', width: 130, align: 'center', headerAlign: 'center', renderCell: (p) => formatDate(p.value) },
-    { field: 'payment_method', headerName: 'Method', width: 140, align: 'center', headerAlign: 'center' },
-    { field: 'remarks', headerName: 'Remarks', flex: 1, minWidth: 150, align: 'left', headerAlign: 'left', renderCell: (p) => p.value || '—' },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 120,
-      sortable: false,
-      align: 'right',
-      headerAlign: 'right',
-      renderCell: (params) => (
+  const columnHelper = createColumnHelper();
+  const columns = useMemo(() => [
+    columnHelper.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+    columnHelper.accessor('description', { header: 'Description', meta: { align: 'left' } }),
+    columnHelper.accessor('amount', { header: 'Amount', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+    columnHelper.accessor('category', { header: 'Category', meta: { align: 'center' }, cell: (info) => <Box sx={{ textTransform: 'capitalize' }}>{info.getValue()}</Box> }),
+    columnHelper.accessor('expense_date', { header: 'Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+    columnHelper.accessor('payment_method', { header: 'Method', meta: { align: 'center' } }),
+    columnHelper.accessor('remarks', { header: 'Remarks', meta: { align: 'left' }, cell: (info) => info.getValue() || '—' }),
+    columnHelper.display({
+      id: 'actions',
+      header: 'Actions',
+      meta: { align: 'right' },
+      enableSorting: false,
+      cell: (info) => (
         <Box>
           <Tooltip title="Edit">
-            <IconButton size="small" onClick={() => openEdit(params.row)} color="primary">
+            <IconButton size="small" onClick={() => openEdit(info.row.original)} color="primary">
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton size="small" onClick={() => { setDeletingId(params.row.id); setDeleteOpen(true); }} color="error">
+            <IconButton size="small" onClick={() => { setDeletingId(info.row.original.id); setDeleteOpen(true); }} color="error">
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>
       ),
-    },
-  ];
+    }),
+  ], [openEdit]);
 
 
   return (
@@ -394,19 +394,11 @@ export default function Expenses() {
           <CircularProgress />
         </Box>
       ) : (
-        <Paper sx={{ height: 600, width: '100%', borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            pageSizeOptions={[10, 20, 50, 100]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 10 } }
-            }}
-            disableRowSelectionOnClick
-            rowHeight={52}
-            sx={{ border: 0 }}
-          />
-        </Paper>
+        <ReusableTable
+          data={rows}
+          columns={columns}
+          loading={loading}
+        />
       )}
 
       {/* Add/Edit Form Dialog */}

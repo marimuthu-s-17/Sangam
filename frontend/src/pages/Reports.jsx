@@ -13,7 +13,8 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { createColumnHelper } from '@tanstack/react-table';
+import ReusableTable from '../components/table/ReusableTable';
 import {
   Assessment as AssessmentIcon,
   PictureAsPdf as PdfIcon,
@@ -82,63 +83,64 @@ export default function Reports() {
 
   // Column definitions based on report type
   const getColumns = (type) => {
+    const ch = createColumnHelper();
     if (type === 'monthly-expense' || type === 'category-expense') {
       return [
-        { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'date', headerName: 'Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'category', headerName: 'Category', flex: 0.8, renderCell: (p) => <Box sx={{ textTransform: 'capitalize' }}>{p.value}</Box> },
-        { field: 'description', headerName: 'Description', flex: 1.2 },
-        { field: 'amount', headerName: 'Amount', flex: 0.8, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-        { field: 'payment_method', headerName: 'Payment Method', flex: 0.8 },
-        { field: 'remarks', headerName: 'Remarks', flex: 1 },
+        ch.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+        ch.accessor('date', { header: 'Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+        ch.accessor('category', { header: 'Category', meta: { align: 'center' }, cell: (info) => <Box sx={{ textTransform: 'capitalize' }}>{info.getValue()}</Box> }),
+        ch.accessor('description', { header: 'Description', meta: { align: 'left' } }),
+        ch.accessor('amount', { header: 'Amount', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+        ch.accessor('payment_method', { header: 'Payment Method', meta: { align: 'center' } }),
+        ch.accessor('remarks', { header: 'Remarks', meta: { align: 'left' } }),
       ];
     } else if (type === 'loans' || type === 'outstanding-loans') {
       return [
-        { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'borrower_name', headerName: 'Borrower', flex: 1.2 },
-        { field: 'phone_number', headerName: 'Phone', flex: 0.8 },
-        { field: 'loan_amount', headerName: 'Principal', flex: 0.8, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-        { field: 'interest_rate', headerName: 'Rate', flex: 0.6, align: 'right', headerAlign: 'right', renderCell: (p) => `${p.value}% p.a.` },
-        { field: 'loan_date', headerName: 'Loan Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'due_date', headerName: 'Due Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'outstanding_amount', headerName: 'Outstanding', flex: 0.9, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-        { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
-        { field: 'remarks', headerName: 'Remarks', flex: 1 },
+        ch.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+        ch.accessor('borrower_name', { header: 'Borrower', meta: { align: 'left' } }),
+        ch.accessor('phone_number', { header: 'Phone', meta: { align: 'left' } }),
+        ch.accessor('loan_amount', { header: 'Principal', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+        ch.accessor('interest_rate', { header: 'Rate', meta: { align: 'right' }, cell: (info) => `${info.getValue()}% p.a.` }),
+        ch.accessor('loan_date', { header: 'Loan Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+        ch.accessor('due_date', { header: 'Due Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+        ch.accessor('outstanding_amount', { header: 'Outstanding', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+        ch.accessor('status', { header: 'Status', meta: { align: 'center' }, cell: (info) => <StatusChip status={info.getValue()} /> }),
+        ch.accessor('remarks', { header: 'Remarks', meta: { align: 'left' } }),
       ];
     } else if (type === 'interest-collection') {
       return [
-        { field: 'payment_id', headerName: 'Payment ID', width: 100 },
-        { field: 'loan_id', headerName: 'Loan ID', width: 80 },
-        { field: 'borrower_name', headerName: 'Borrower', flex: 1.2 },
-        { field: 'payment_date', headerName: 'Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'interest_payment', headerName: 'Interest Paid', flex: 0.9, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-        { field: 'payment_method', headerName: 'Method', flex: 0.8 },
-        { field: 'notes', headerName: 'Notes', flex: 1 },
+        ch.accessor('payment_id', { header: 'Payment ID', meta: { align: 'center' } }),
+        ch.accessor('loan_id', { header: 'Loan ID', meta: { align: 'center' } }),
+        ch.accessor('borrower_name', { header: 'Borrower', meta: { align: 'left' } }),
+        ch.accessor('payment_date', { header: 'Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+        ch.accessor('interest_payment', { header: 'Interest Paid', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+        ch.accessor('payment_method', { header: 'Method', meta: { align: 'center' } }),
+        ch.accessor('notes', { header: 'Notes', meta: { align: 'left' } }),
       ];
     } else if (type === 'members') {
       return [
-        { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'name', headerName: 'Name', flex: 1.2 },
-        { field: 'phone', headerName: 'Phone', flex: 0.8 },
-        { field: 'joined_date', headerName: 'Joined Date', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
-        { field: 'total_contributions', headerName: 'Contributions', flex: 0.9, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-        { field: 'outstanding_balance', headerName: 'Outstanding', flex: 0.9, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+        ch.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+        ch.accessor('name', { header: 'Name', meta: { align: 'left' } }),
+        ch.accessor('phone', { header: 'Phone', meta: { align: 'left' } }),
+        ch.accessor('joined_date', { header: 'Joined Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+        ch.accessor('status', { header: 'Status', meta: { align: 'center' }, cell: (info) => <StatusChip status={info.getValue()} /> }),
+        ch.accessor('total_contributions', { header: 'Contributions', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+        ch.accessor('outstanding_balance', { header: 'Outstanding', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
       ];
     } else if (type === 'auctions') {
       return [
-        { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'name', headerName: 'Auction Name', flex: 1.2 },
-        { field: 'start_month', headerName: 'Start Month', flex: 0.8, renderCell: (p) => formatDate(p.value) },
-        { field: 'duration', headerName: 'Duration', flex: 0.6, align: 'center', headerAlign: 'center', renderCell: (p) => `${p.value} Months` },
-        { field: 'prize_amount', headerName: 'Prize Amount', flex: 0.8, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-        { field: 'status', headerName: 'Status', width: 120, align: 'center', headerAlign: 'center', renderCell: (p) => <StatusChip status={p.value} /> },
-        { field: 'current_month', headerName: 'Current Round', flex: 0.6, align: 'center', headerAlign: 'center' },
+        ch.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+        ch.accessor('name', { header: 'Auction Name', meta: { align: 'left' } }),
+        ch.accessor('start_month', { header: 'Start Month', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+        ch.accessor('duration', { header: 'Duration', meta: { align: 'center' }, cell: (info) => `${info.getValue()} Months` }),
+        ch.accessor('prize_amount', { header: 'Prize Amount', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+        ch.accessor('status', { header: 'Status', meta: { align: 'center' }, cell: (info) => <StatusChip status={info.getValue()} /> }),
+        ch.accessor('current_month', { header: 'Current Round', meta: { align: 'center' } }),
       ];
     } else if (type === 'profit-loss') {
       return [
-        { field: 'metric', headerName: 'Financial Metric', flex: 1.5 },
-        { field: 'amount', headerName: 'Amount', flex: 1, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
+        ch.accessor('metric', { header: 'Financial Metric', meta: { align: 'left' } }),
+        ch.accessor('amount', { header: 'Amount', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
       ];
     }
     return [];
@@ -379,12 +381,10 @@ export default function Reports() {
             </Stack>
           </Box>
           <Box sx={{ height: 500 }}>
-            <DataGrid
-              rows={previewData}
+            <ReusableTable
+              data={previewData}
               columns={columns}
-              pageSizeOptions={[10, 25, 50, 100]}
-              initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-              disableRowSelectionOnClick
+              loading={loading}
             />
           </Box>
         </Card>

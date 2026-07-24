@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Box, Grid, Paper, Typography, Skeleton, Card, CardContent, Stack } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { createColumnHelper } from '@tanstack/react-table';
+import ReusableTable from '../components/table/ReusableTable';
 import {
   People as PeopleIcon,
   Gavel as GavelIcon,
@@ -26,37 +27,30 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const auctionColumns = [
-    { field: 'auction_number', headerName: 'Auction #', flex: 0.5, minWidth: 90, align: 'center', headerAlign: 'center' },
-    { field: 'auction_date', headerName: t('date'), flex: 0.8, minWidth: 110, renderCell: (p) => formatDate(p.value) },
-    { field: 'member_name', headerName: 'Winner', flex: 1, minWidth: 130 },
-    { field: 'amount', headerName: t('amount'), flex: 0.8, minWidth: 110, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-    {
-      field: 'status',
-      headerName: t('status'),
-      flex: 0.7,
-      minWidth: 110,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (p) => <StatusChip status={p.value} />,
-    },
-  ];
+  const columnHelper = createColumnHelper();
+  const auctionColumns = useMemo(() => [
+    columnHelper.accessor('auction_number', { header: 'Auction #', meta: { align: 'center' } }),
+    columnHelper.accessor('auction_date', { header: t('date'), meta: { align: 'left' }, cell: (info) => formatDate(info.getValue()) }),
+    columnHelper.accessor('member_name', { header: 'Winner', meta: { align: 'left' } }),
+    columnHelper.accessor('amount', { header: t('amount'), meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+    columnHelper.accessor('status', {
+      header: t('status'),
+      meta: { align: 'center' },
+      cell: (info) => <StatusChip status={info.getValue()} />,
+    }),
+  ], [t]);
 
-  const transactionColumns = [
-    { field: 'member_name', headerName: 'Member', flex: 1, minWidth: 130 },
-    {
-      field: 'transaction_type',
-      headerName: t('txnType'),
-      flex: 0.7,
-      minWidth: 100,
-      align: 'center',
-      headerAlign: 'center',
-      renderCell: (p) => <StatusChip status={p.value} />,
-    },
-    { field: 'amount', headerName: t('amount'), flex: 0.8, minWidth: 110, align: 'right', headerAlign: 'right', renderCell: (p) => formatCurrency(p.value) },
-    { field: 'transaction_date', headerName: t('date'), flex: 0.8, minWidth: 110, renderCell: (p) => formatDate(p.value) },
-    { field: 'description', headerName: t('description'), flex: 1.2, minWidth: 150 },
-  ];
+  const transactionColumns = useMemo(() => [
+    columnHelper.accessor('member_name', { header: 'Member', meta: { align: 'left' } }),
+    columnHelper.accessor('transaction_type', {
+      header: t('txnType'),
+      meta: { align: 'center' },
+      cell: (info) => <StatusChip status={info.getValue()} />,
+    }),
+    columnHelper.accessor('amount', { header: t('amount'), meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+    columnHelper.accessor('transaction_date', { header: t('date'), meta: { align: 'left' }, cell: (info) => formatDate(info.getValue()) }),
+    columnHelper.accessor('description', { header: t('description'), meta: { align: 'left' } }),
+  ], [t]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -227,12 +221,10 @@ export default function Dashboard() {
               {t('recentAuctions')}
             </Typography>
             <Box sx={{ height: 260 }}>
-              <DataGrid
-                rows={data?.recent_auctions || []}
+              <ReusableTable
+                data={data?.recent_auctions || []}
                 columns={auctionColumns}
-                hideFooter
-                disableRowSelectionOnClick
-                sx={{ border: 'none' }}
+                loading={loading}
               />
             </Box>
           </Paper>
@@ -243,12 +235,10 @@ export default function Dashboard() {
               {t('recentTransactions')}
             </Typography>
             <Box sx={{ height: 260 }}>
-              <DataGrid
-                rows={data?.recent_transactions || []}
+              <ReusableTable
+                data={data?.recent_transactions || []}
                 columns={transactionColumns}
-                hideFooter
-                disableRowSelectionOnClick
-                sx={{ border: 'none' }}
+                loading={loading}
               />
             </Box>
           </Paper>

@@ -15,8 +15,11 @@ import {
   Divider,
   Paper,
   IconButton,
+  InputAdornment,
+  Tooltip,
 } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { createColumnHelper } from '@tanstack/react-table';
+import ReusableTable from '../components/table/ReusableTable';
 import {
   Settings as SettingsIcon,
   CloudDownload as BackupIcon,
@@ -73,28 +76,25 @@ export default function Settings() {
     { value: 'Settings', label: t('settings') || 'Settings' },
   ];
 
-  const auditColumns = [
-    { field: 'id', headerName: t('id'), width: 70, align: 'center', headerAlign: 'center' },
-    {
-      field: 'created_at',
-      headerName: 'Timestamp',
-      flex: 0.9,
-      minWidth: 160,
-      renderCell: (p) => {
-        if (!p.value) return '—';
-        const d = new Date(p.value);
+  const columnHelper = createColumnHelper();
+  const auditColumns = useMemo(() => [
+    columnHelper.accessor('id', { header: t('id'), meta: { align: 'center' } }),
+    columnHelper.accessor('created_at', {
+      header: 'Timestamp',
+      meta: { align: 'left' },
+      cell: (info) => {
+        if (!info.getValue()) return '—';
+        const d = new Date(info.getValue());
         return d.toLocaleString(language === 'ta' ? 'ta-IN' : 'en-IN');
       },
-    },
-    { field: 'module', headerName: 'Module', width: 120, align: 'center', headerAlign: 'center' },
-    { field: 'user', headerName: 'User', width: 100, align: 'center', headerAlign: 'center' },
-    { 
-      field: 'action', 
-      headerName: 'Action Description', 
-      flex: 1.5, 
-      minWidth: 250,
-      renderCell: (p) => (
-        <Tooltip title={p.value} enterDelay={300} arrow>
+    }),
+    columnHelper.accessor('module', { header: 'Module', meta: { align: 'center' } }),
+    columnHelper.accessor('user', { header: 'User', meta: { align: 'center' } }),
+    columnHelper.accessor('action', {
+      header: 'Action Description',
+      meta: { align: 'left' },
+      cell: (info) => (
+        <Tooltip title={info.getValue()} enterDelay={300} arrow>
           <span style={{ 
             overflow: 'hidden', 
             textOverflow: 'ellipsis', 
@@ -102,12 +102,12 @@ export default function Settings() {
             width: '100%', 
             display: 'block' 
           }}>
-            {p.value}
+            {info.getValue()}
           </span>
         </Tooltip>
       )
-    },
-  ];
+    }),
+  ], [t, language]);
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -577,14 +577,10 @@ export default function Settings() {
             </Box>
 
             <Box sx={{ height: 450 }}>
-              <DataGrid
-                rows={auditLogs}
+              <ReusableTable
+                data={auditLogs}
                 columns={auditColumns}
                 loading={logsLoading}
-                pageSizeOptions={[10, 25, 50]}
-                initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-                disableRowSelectionOnClick
-                sx={{ border: 'none' }}
               />
             </Box>
           </Paper>

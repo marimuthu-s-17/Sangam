@@ -146,7 +146,8 @@ export default function Settings() {
       if (filterEndDate) params.end_date = filterEndDate;
 
       const res = await settingService.getAuditLogs(params);
-      setAuditLogs(res.data.data || []);
+      setAuditLogs(res.data?.data || []);
+      setTotal(res.data?.total || 0);
     } catch (err) {
       console.error('Failed to load audit logs:', err);
       setSnack({ open: true, msg: 'Error loading audit logs.', sev: 'error' });

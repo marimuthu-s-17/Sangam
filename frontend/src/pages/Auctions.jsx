@@ -209,7 +209,7 @@ export default function Auctions() {
   const fetchCommunityMembers = useCallback(async () => {
     try {
       const res = await memberService.getAll({ limit: 500, status: 'active' });
-      setCommunityMembers(res.data.data || []);
+      setCommunityMembers(res.data?.data || []);
     } catch (err) {
       console.error("Failed to fetch community members", err);
     }
@@ -242,13 +242,13 @@ export default function Auctions() {
       if (statusFilter) params.status = statusFilter;
 
       const res = await auctionService.getAll(params);
-      setRows(res.data.data || []);
-      setTotal(res.data.total || 0);
+      setRows(res.data?.data || []);
+      setTotal(res.data?.total || 0);
 
       // If we are currently viewing a details page, refresh its specific data too
       const currentViewing = viewingAuctionRef.current;
       if (currentViewing) {
-        const refreshedCurrent = res.data.data.find(a => a.id === currentViewing.id);
+        const refreshedCurrent = (res.data?.data || []).find(a => a.id === currentViewing.id);
         if (refreshedCurrent) {
           setViewingAuction(refreshedCurrent);
         }

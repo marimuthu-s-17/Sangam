@@ -146,8 +146,8 @@ export default function Members() {
       if (ageFilter) params.age = ageFilter;
 
       const res = await memberService.getAll(params);
-      setMembers(res.data.data);
-      setTotal(res.data.total);
+      setMembers(res.data?.data || []);
+      setTotal(res.data?.total || 0);
     } catch (err) {
       console.error("Failed to fetch members", err);
       setSnack({ open: true, msg: 'Error connecting to server.', sev: 'error' });

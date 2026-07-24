@@ -157,11 +157,11 @@ export default function Reports() {
       }
 
       const res = await reportService.getPreview(reportType, params);
-      setPreviewTitle(res.data.title);
+      setPreviewTitle(res.data?.title || 'Report Preview');
       setColumns(getColumns(reportType));
       
       // Add standard React Grid compatible unique ID mapper
-      const rawData = res.data.data || [];
+      const rawData = res.data?.data || [];
       const formattedData = rawData.map((item, idx) => ({
         ...item,
         id: item.id || item.payment_id || idx + 1,

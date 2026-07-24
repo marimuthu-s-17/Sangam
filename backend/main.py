@@ -22,6 +22,17 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown."""
+    print("🛠️ Running database migrations...")
+    import subprocess
+    import sys
+    try:
+        subprocess.run([sys.executable, "-m", "alembic", "upgrade", "head"], check=True)
+        print("✅ Database migrations complete")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Database migrations failed: {e}")
+        # We don't exit here so the app can still start, but the scheduler might fail.
+        # Alternatively, we could raise to prevent the app from starting in an inconsistent state.
+
     scheduler_task = asyncio.create_task(start_reminder_scheduler())
     yield
     # Cleanup on shutdown

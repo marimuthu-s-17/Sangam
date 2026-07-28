@@ -64,6 +64,7 @@ import StatusChip from '../components/StatusChip';
 import FormDialog from '../components/FormDialog';
 import ConfirmDialog from '../components/ConfirmDialog';
 import memberService from '../services/memberService';
+import ReusableTable from '../components/table/ReusableTable';
 import { formatDate, getTodayDate } from '../utils/formatters';
 import { createColumnHelper } from '@tanstack/react-table';
 

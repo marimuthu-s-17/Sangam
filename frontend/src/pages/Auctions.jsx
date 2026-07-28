@@ -283,7 +283,7 @@ export default function Auctions() {
     setHistoryLoading(true);
     try {
       const res = await auctionService.getHistory(auctionId);
-      setHistoryDetails(res.data || []);
+      setHistoryDetails(Array.isArray(res.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []));
     } catch (err) {
       console.error("Failed to load history details", err);
       setSnack({ open: true, msg: err.message || 'Failed to fetch history details.', sev: 'error' });

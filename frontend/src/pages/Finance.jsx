@@ -234,7 +234,7 @@ export default function Finance() {
     setHistoryPaymentsLoading(true);
     try {
       const res = await loanService.getPayments(row.id);
-      setHistoryPayments(res.data || []);
+      setHistoryPayments(Array.isArray(res.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []));
     } catch (err) {
       console.error('Failed to fetch payments history:', err);
       setSnack({ open: true, msg: 'Failed to load payments history.', sev: 'error' });

@@ -58,7 +58,7 @@ export default function RemindersSettings() {
     setHistoryLoading(true);
     try {
       const res = await reminderService.getAllHistory();
-      setHistory(res.data || []);
+      setHistory(Array.isArray(res.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []));
     } catch (err) {
       console.error('Failed to load reminder history logs', err);
       setSnack({ open: true, msg: 'Failed to load reminder history.', sev: 'error' });

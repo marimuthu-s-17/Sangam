@@ -74,7 +74,7 @@ export default function Ledger() {
     setLoading(true);
     try {
       const res = await ledgerService.getSummary();
-      setSummaries(res.data || []);
+      setSummaries(Array.isArray(res.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []));
     } catch (err) {
       console.error('Failed to load ledger summaries', err);
     } finally {
@@ -90,11 +90,12 @@ export default function Ledger() {
   const fetchDetailedLedger = async (memberId) => {
     const member = summaries.find(m => m.member_id === memberId);
     setSelectedMember(member);
-    setDetailsOpen(true);
     setDetailsLoading(true);
+    setDetailsOpen(true);
+
     try {
       const res = await ledgerService.getMemberLedger(memberId);
-      setDetailedLedger(res.data || []);
+      setDetailedLedger(Array.isArray(res.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []));
     } catch (err) {
       console.error('Failed to load detailed member ledger', err);
     } finally {

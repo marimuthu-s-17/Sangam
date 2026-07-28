@@ -65,6 +65,7 @@ import FormDialog from '../components/FormDialog';
 import ConfirmDialog from '../components/ConfirmDialog';
 import memberService from '../services/memberService';
 import { formatDate, getTodayDate } from '../utils/formatters';
+import { createColumnHelper } from '@tanstack/react-table';
 
 export default function Members() {
   const { t } = useTranslation();
@@ -240,7 +241,7 @@ export default function Members() {
       setSnack({ open: true, msg: 'Member soft deleted (status marked INACTIVE)', sev: 'success' });
       fetchMembers();
       fetchStats();
-    } catch (err) {
+    } catch {
       setSnack({ open: true, msg: 'Failed to delete member', sev: 'error' });
     } finally {
       setDeleteOpen(false);
@@ -345,7 +346,7 @@ export default function Members() {
         </Box>
       ),
     }),
-  ], [openDetail, openEdit, openDelete]);
+  ], [columnHelper, openDetail, openEdit, openDelete]);
 
 
   return (
@@ -450,7 +451,7 @@ export default function Members() {
         </Button>
       </Box>
 
-      {/* DataGrid Member List */}
+      {/* Table Member List */}
       {loading ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
           <Skeleton variant="rectangular" height={50} sx={{ borderRadius: 2 }} />

@@ -392,7 +392,7 @@ export default function Finance() {
     setTxnDialogOpen(true);
   };
 
-  const openEditTxn = (row) => {
+  const openEditTxn = useCallback((row) => {
     setEditingTxn(row);
     txnForm.reset({
       member_id: row.member_id || '',
@@ -403,7 +403,7 @@ export default function Finance() {
       reference_number: row.reference_number || '',
     });
     setTxnDialogOpen(true);
-  };
+  }, [txnForm]);
 
   const onTxnSubmit = async (d) => {
     const payload = {
@@ -503,7 +503,7 @@ export default function Finance() {
         </Box>
       ),
     }),
-  ], [openEditTxn]);
+  ], [columnHelper, openEditTxn]);
 
   const loansColumns = useMemo(() => [
     columnHelper.accessor('id', { header: 'ID', meta: { align: 'center' } }),
@@ -550,7 +550,7 @@ export default function Finance() {
         </Box>
       ),
     }),
-  ], [openRecordPayment, openHistory, openEditLoan]);
+  ], [columnHelper, openRecordPayment, openHistory, openEditLoan]);
 
   return (
     <Box sx={{ pb: 4 }}>
@@ -707,7 +707,7 @@ export default function Finance() {
             </Grid>
           </Card>
 
-          {/* DataGrid Loans List */}
+          {/* Table Loans List */}
           {loansLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
               <CircularProgress />

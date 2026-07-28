@@ -79,14 +79,7 @@ body::before {
   }
 }
 
-/* DataGrid wrapper */
-.datagrid-container {
-  background: #FFFFFF;
-  border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-  border: 1px solid #EDEAE5;
-  overflow: hidden;
-}
+
 
 /* Compact form sections in dialogs */
 .form-section-heading {

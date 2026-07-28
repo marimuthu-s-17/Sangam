@@ -82,7 +82,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { formatCurrency, formatDate, getTodayDate } from '../utils/formatters';
 import { useSettings } from '../context/SettingsContext';
 
-// A standalone subcomponent to prevent hook call order warnings inside DataGrid renderCell
+// A standalone subcomponent to prevent hook call order warnings inside table renderCell
 const PaidAmountInput = ({ row, isCompleted, onUpdatePaidAmount }) => {
   const [val, setVal] = useState(row.paid_amount);
 
@@ -182,7 +182,7 @@ export default function Auctions() {
   const [bidAmount, setBidAmount] = useState('');
   const [roundSubmitting, setRoundSubmitting] = useState(false);
 
-  const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm({
+  const { control, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
       description: '',
@@ -593,7 +593,7 @@ export default function Auctions() {
       if (viewingAuction && viewingAuction.id === deletingId) {
         setViewingAuction(prev => ({ ...prev, status: 'cancelled' }));
       }
-    } catch (err) {
+    } catch {
       setSnack({ open: true, msg: 'Failed to cancel auction', sev: 'error' });
     } finally {
       setDeleteOpen(false);
@@ -652,9 +652,51 @@ export default function Auctions() {
     }
   };
 
-  const handleAuctionAccordion = (id) => (event, isExpanded) => {
-    setExpandedAuctionId(isExpanded ? id : null);
-  };
+  const mainAuctionsColumns = useMemo(() => {
+    const ch = createColumnHelper();
+    return [
+      ch.accessor('id', { header: 'ID', meta: { align: 'center' } }),
+      ch.accessor('name', { header: 'Auction Name', meta: { align: 'left' } }),
+      ch.accessor('members_count', { header: 'Members', meta: { align: 'center' } }),
+      ch.accessor('monthly_contribution', { header: 'Contribution', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+      ch.accessor('commission', { header: 'Commission', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+      ch.accessor('prize_amount', { header: 'Prize Amount', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
+      ch.accessor('total_months', { header: 'Duration', meta: { align: 'center' }, cell: (info) => `${info.getValue()} Months` }),
+      ch.accessor('current_month', { header: 'Progress', meta: { align: 'center' }, cell: (info) => `${info.row.original.current_month}/${info.row.original.total_months}` }),
+      ch.accessor('start_date', { header: 'Start Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
+      ch.accessor('status', { header: 'Status', meta: { align: 'center' }, cell: (info) => <StatusChip status={info.getValue()} /> }),
+      ch.display({
+        id: 'actions',
+        header: 'Actions',
+        meta: { align: 'right' },
+        enableSorting: false,
+        cell: (info) => (
+          <Box>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<AuctionIcon />}
+              onClick={() => setViewingAuction(info.row.original)}
+              sx={{ mr: 1, py: 0.5 }}
+            >
+              Open
+            </Button>
+            <Tooltip title="Edit">
+              <IconButton size="small" onClick={(e) => openEdit(info.row.original, e)} color="primary">
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton size="small" onClick={(e) => openDelete(info.row.original, e)} color="error" disabled={info.row.original.status === 'cancelled'}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ),
+      }),
+    ];
+  }, [openEdit, openDelete]);
 
   // Return full page detail view if an auction is selected
   if (viewingAuction) {
@@ -1596,52 +1638,6 @@ export default function Auctions() {
       </Box>
     );
   }
-
-  const mainAuctionsColumns = useMemo(() => {
-    const ch = createColumnHelper();
-    return [
-      ch.accessor('id', { header: 'ID', meta: { align: 'center' } }),
-      ch.accessor('name', { header: 'Auction Name', meta: { align: 'left' } }),
-      ch.accessor('members_count', { header: 'Members', meta: { align: 'center' } }),
-      ch.accessor('monthly_contribution', { header: 'Contribution', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
-      ch.accessor('commission', { header: 'Commission', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
-      ch.accessor('prize_amount', { header: 'Prize Amount', meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
-      ch.accessor('total_months', { header: 'Duration', meta: { align: 'center' }, cell: (info) => `${info.getValue()} Months` }),
-      ch.accessor('current_month', { header: 'Progress', meta: { align: 'center' }, cell: (info) => `${info.row.original.current_month}/${info.row.original.total_months}` }),
-      ch.accessor('start_date', { header: 'Start Date', meta: { align: 'center' }, cell: (info) => formatDate(info.getValue()) }),
-      ch.accessor('status', { header: 'Status', meta: { align: 'center' }, cell: (info) => <StatusChip status={info.getValue()} /> }),
-      ch.display({
-        id: 'actions',
-        header: 'Actions',
-        meta: { align: 'right' },
-        enableSorting: false,
-        cell: (info) => (
-          <Box>
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              startIcon={<AuctionIcon />}
-              onClick={() => setViewingAuction(info.row.original)}
-              sx={{ mr: 1, py: 0.5 }}
-            >
-              Open
-            </Button>
-            <Tooltip title="Edit">
-              <IconButton size="small" onClick={(e) => openEdit(info.row.original, e)} color="primary">
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton size="small" onClick={(e) => openDelete(info.row.original, e)} color="error" disabled={info.row.original.status === 'cancelled'}>
-                <DeleteIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        ),
-      }),
-    ];
-  }, [openEdit, openDelete]);
 
   return (
     <Box sx={{ position: 'relative', pb: 4 }}>

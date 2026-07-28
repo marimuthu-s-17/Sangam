@@ -443,7 +443,7 @@ export default function Ledger() {
         </Button>
       ),
     }),
-  ], []);
+  ], [columnHelper, fetchDetailedLedger]);
 
   return (
     <Box sx={{ py: 3, px: { xs: 1, md: 3 } }}>

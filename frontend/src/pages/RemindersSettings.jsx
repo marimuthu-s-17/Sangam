@@ -154,7 +154,7 @@ export default function RemindersSettings() {
         </Tooltip>
       )
     }),
-  ], [t]);
+  ], [columnHelper, t]);
 
   if (loading) {
     return (

@@ -38,7 +38,7 @@ export default function Dashboard() {
       meta: { align: 'center' },
       cell: (info) => <StatusChip status={info.getValue()} />,
     }),
-  ], [t]);
+  ], [columnHelper, t]);
 
   const transactionColumns = useMemo(() => [
     columnHelper.accessor('member_name', { header: 'Member', meta: { align: 'left' } }),
@@ -50,7 +50,7 @@ export default function Dashboard() {
     columnHelper.accessor('amount', { header: t('amount'), meta: { align: 'right' }, cell: (info) => formatCurrency(info.getValue()) }),
     columnHelper.accessor('transaction_date', { header: t('date'), meta: { align: 'left' }, cell: (info) => formatDate(info.getValue()) }),
     columnHelper.accessor('description', { header: t('description'), meta: { align: 'left' } }),
-  ], [t]);
+  ], [columnHelper, t]);
 
   useEffect(() => {
     const fetchDashboard = async () => {

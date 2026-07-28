@@ -107,7 +107,7 @@ export default function Settings() {
         </Tooltip>
       )
     }),
-  ], [t, language]);
+  ], [columnHelper, t, language]);
 
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {

@@ -290,44 +290,7 @@ export const getTheme = (mode = 'light') => {
           },
         },
       },
-      MuiDataGrid: {
-        styleOverrides: {
-          root: {
-            border: 'none',
-            borderRadius: 14,
-            backgroundColor: 'transparent',
-            fontSize: '0.84rem',
-            '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: isDark ? '#161B22' : '#F8F5F0',
-              borderBottom: isDark ? '1px solid #21262D' : '1px solid #E8E4DE',
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              color: isDark ? '#8B949E' : '#71717A',
-            },
-            '& .MuiDataGrid-columnHeader': {
-              padding: '0 12px',
-            },
-            '& .MuiDataGrid-cell': {
-              borderBottom: isDark ? '1px solid #21262D' : '1px solid #F0ECE6',
-              fontSize: '0.84rem',
-              padding: '0 12px',
-            },
-            '& .MuiDataGrid-row': {
-              '&:hover': {
-                backgroundColor: isDark ? '#21262D' : '#FFF9EF',
-              },
-              '&:nth-of-type(even)': {
-                backgroundColor: isDark ? '#0D1117' : '#FDFCFA',
-              },
-            },
-            '& .MuiDataGrid-footerContainer': {
-              borderTop: isDark ? '1px solid #21262D' : '1px solid #E8E4DE',
-            },
-          },
-        },
-      },
+
       MuiTableCell: {
         styleOverrides: {
           root: {

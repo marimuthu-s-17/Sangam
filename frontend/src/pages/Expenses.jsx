@@ -241,7 +241,7 @@ export default function Expenses() {
         </Box>
       ),
     }),
-  ], [openEdit]);
+  ], [columnHelper, openEdit]);
 
 
   return (
@@ -388,7 +388,7 @@ export default function Expenses() {
         </Grid>
       </Card>
 
-      {/* DataGrid Expense List */}
+      {/* Table Expense List */}
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
           <CircularProgress />

@@ -139,7 +139,7 @@ export default function MainLayout() {
             flexShrink: 0,
           }}
         >
-          <GavelIcon sx={{ color: '#fff', fontSize: 18 }} />
+          <img src="/logo.png" alt="Sangam Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px' }} />
         </Box>
         <Box sx={{ minWidth: 0 }}>
           <Typography
